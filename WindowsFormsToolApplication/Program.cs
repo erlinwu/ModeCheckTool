@@ -15,6 +15,8 @@ namespace ImportXlsToDataTable
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+            //log for net
+            log4net.Config.XmlConfigurator.Configure();
         }
     }
 }

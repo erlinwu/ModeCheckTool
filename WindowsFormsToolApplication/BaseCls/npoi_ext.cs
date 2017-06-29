@@ -298,6 +298,75 @@ namespace NPOI
             return row.Sheet.FuncSheet(row.RowNum, columnIndex, (currentDimension, isMerge) => currentDimension.DataCell);
         }
 
+        /// <summary>
+        /// 判断指定单元格是否为合并单元格，并且输出该单元格的高度和宽度
+        /// </summary>
+        /// <param name="cell">单元格</param>
+        /// <param name="height">单元格高度</param>
+        /// <param name="width">单元格宽度</param>
+        /// <returns>返回是否为合并单元格的布尔(Boolean)值</returns>
+        public static bool IsMergeCellShape(this ICell cell, out float height, out float width)
+        {
+            //宽度计算说明 96dpi下 8个字符的宽度实际上是7.29
+            //Using the Calibri font as an example, the maximum digit width of 11 point font size is 7 pixels (at 96 dpi). 
+            //If you set a column width to be eight characters wide, e.g. setColumnWidth(columnIndex, 8*256), 
+            //then the actual value of visible characters (the value shown in Excel) is derived from the following equation: 
+            //Truncate([numChars*7+5]/7*256)/256 = 8; which gives 7.29.
+
+            Dimension dimension = new Dimension();
+            height = 0;
+            width = 0;
+            bool isMerge = cell.Sheet.IsMergeCell(cell.RowIndex, cell.ColumnIndex, out dimension);
+            //
+            if (!isMerge)
+            {
+                //方法一
+                //getColumnWidth
+                //int getColumnWidth(int columnIndex)
+                //get the width(in units of 1 / 256th of a character width)
+                //Character width is defined as the maximum digit width of the numbers 0, 1, 2, ... 9 as rendered using the default font (first font in the workbook)
+                //Parameters:
+                //                columnIndex - -the column to get(0 - based)
+                //Returns:
+                //                width - the width in units of 1 / 256th of a character width
+                //PS:尝试32.04左右的倍率，转换成像素 pix=width/32.04
+                width = cell.Sheet.GetColumnWidth(dimension.FirstColumnIndex);
+                width = width / 32;//test 20170724
+                //
+
+                //方法二 说明 不同字体有可能拉伸
+                //getColumnWidthInPixels
+                //public float getColumnWidthInPixels(int column)
+                //Description copied from interface: Sheet
+                //get the width in pixel
+                //Please note, that this method works correctly only for workbooks with the default font size 
+                //(Arial 10pt for .xls and Calibri 11pt for .xlsx). If the default font is changed the column width can be streched
+                //width= cell.Sheet.GetColumnWidthInPixels(dimension.FirstColumnIndex);
+
+                //short getHeight()
+                //Get the row's height measured in twips (1/20th of a point). If the height is not set, the default worksheet value is returned, See Sheet.getDefaultRowHeightInPoints()
+                //Returns:
+                //row height measured in twips(1 / 20th of a point)
+                height = cell.Sheet.GetRow(dimension.FirstRowIndex).Height;
+            }
+            else//单元格高度宽度特殊处理
+            {
+                for (int i = dimension.FirstColumnIndex; i <= dimension.LastColumnIndex; i++)
+                {
+                    //方法一 字符
+                    //width = width + cell.Sheet.GetColumnWidth(i);
+                    //方法二 像素
+                    width = width + cell.Sheet.GetColumnWidthInPixels(i);
+                }
+                for (int i= dimension.FirstRowIndex; i <= dimension.LastRowIndex; i++)
+                {
+                    height = height + cell.Sheet.GetRow(i).Height;
+                }
+            }
+            return isMerge;
+        }
+
+
         private static T FuncSheet<T>(this ISheet sheet, int rowIndex, int columnIndex, Func<Dimension, bool, T> func)
         {
             //当前单元格维度
