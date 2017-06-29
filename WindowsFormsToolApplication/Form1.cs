@@ -181,11 +181,11 @@ namespace ImportXlsToDataTable
                 {
                     DataTable dataTableShapeList = new DataTable();
                     //InitializeWorkbook(@filepath);//
-                    dataTableTypeList = ExcelToDataTable_modeinfo(@filepath,out dataTableShapeList);//模式的配置表相对不规范，另外写方法导入
+                    dataTableModeList = ExcelToDataTable_modeinfo(@filepath,out dataTableShapeList);//模式的配置表相对不规范，另外写方法导入
                     //datatable 批量导入sqlite
-                    if (dataTableTypeList != null)
+                    if (dataTableModeList != null)
                     { 
-                        insertDB_sqlitebulk_ex(dataTableTypeList, "modeinfo");
+                        insertDB_sqlitebulk_ex(dataTableModeList, "modeinfo");
                     }
                     //模式对比画面 宽高信息列表获取
                     if (dataTableShapeList != null)
@@ -217,13 +217,13 @@ namespace ImportXlsToDataTable
                 string filepath = openExcelDialog();
                 if (filepath != "")
                 {
-                    
+
                     //InitializeWorkbook(@filepath);//
-                    dataTableTypeList = ExcelToDataTable(@filepath, true,2,2, 3);//
+                    dataTableDeviceList = ExcelToDataTable(@filepath, true,2,2, 3);//
                     //datatable 批量导入sqlite
-                    if (dataTableTypeList != null)
+                    if (dataTableDeviceList != null)
                     {
-                        insertDB_sqlitebulk_ex(dataTableTypeList, "devicelist");
+                        insertDB_sqlitebulk_ex(dataTableDeviceList, "devicelist");
                     }
                     this.ShowInfo("设备清单列表导入结束");
                 }
@@ -255,6 +255,7 @@ namespace ImportXlsToDataTable
         private void buttonScreenClear_Click(object sender, EventArgs e)
         {
             richTextBoxMain.Clear();//
+            
         }
 
         //1.生成界面 选择站点的combobox刷新列表
@@ -773,6 +774,7 @@ namespace ImportXlsToDataTable
                 }
                 string mode_sysname;
                 string mode_sysside;
+                //模式控制A,B端的输出点，（A,B最后会同步，这里自动生成都是A端的点,例如：DXTB_MODA001
                 string mode_control_name = get_mode_controlname(pagename_list, modesysnum,out mode_sysname,out mode_sysside);
                 //例子 学林路,XLR,DXT,DXTB_MODA001,小系统,II端 
                 string page_modeinfo = stationShowName + "," + stationName + "," + modesysnum + "," + mode_control_name+"," + mode_sysname + ","+ mode_sysside;//页面大部分脚本显示公用信息
@@ -994,18 +996,111 @@ namespace ImportXlsToDataTable
                 #region//6.模式画面切换按钮的自动生成
                 XmlNodeList example_btn_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PUSH_BUTTON_MODECHANGE']");
                 XmlNodeList example_rec_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='RECTANGLE_MODECHANGE']");
-                XmlNodeList example_text_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PRIMITIVE_TEXT_MODECHANGE']");
-                
-                    
+                XmlNodeList example_text_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PRIMITIVE_TEXT_MODECHANGE']");//图片按钮上的模式名称的text
+                //按钮的大小，从模板文件获取，不固定死
+                //按钮部分的自动排列生成
+                //1.修改btn的Text；2.修改btn的tooltip作为脚本的文件路径；3.位置x,y的修改。
+                int btn_rowsnum_modechange =2;//模式按钮的行数，一般应该都是2行。
+                int btn_changerow_num =Convert.ToInt32(Math.Ceiling((double)(pagename_list.Count) / (double)btn_rowsnum_modechange));//换行的序号，需要向上取整
+                //获取初始的xy值  btn 注意说明：图片的y值需要在按钮y值上减1
+                XmlNode xmlnode_btn_t = example_btn_modechange[0].SelectSingleNode("./properties/prop[@name='Location']");
+                string[] location_arr_t = xmlnode_btn_t.InnerText.Split(' ');
+                int btn_x_t= Convert.ToInt32(location_arr_t[0]);
+                int btn_y_t= Convert.ToInt32(location_arr_t[1]);
+                //获取按钮大小size
+                xmlnode_btn_t = example_btn_modechange[0].SelectSingleNode("./properties/prop[@name='Size']");
+                string[] size_arr_t = xmlnode_btn_t.InnerText.Split(' ');
+                int btn_w_t = Convert.ToInt32(size_arr_t[0]);
+                int btn_h_t = Convert.ToInt32(size_arr_t[1]);
+
+                for (int i = 0; i < pagename_list.Count; i++)
+                {
+                    //按钮的文字需要特殊处理 DXT-大系统 / SDT - 隧道系统
+                    string btn_name;
+                    if (pagename_list[i] == "DXT")
+                    {
+                        btn_name = "大系统";
+                    }
+                    else if(pagename_list[i] == "SDT")
+                    {
+                        btn_name = "隧道系统";
+                    }
+                    else
+                    {
+                        btn_name = pagename_list[i];
+                    };
+                    //x y轴的参数
+                    int x_t;
+                    int y_t;
+                    if (i < btn_changerow_num)
+                    {
+                        x_t = btn_x_t+i* btn_w_t;
+                        y_t = btn_y_t; 
+                    }
+                    else
+                    {
+                        x_t = btn_x_t +(i-btn_changerow_num) * btn_w_t;
+                        y_t = btn_y_t+ btn_h_t;
+                    }
+
+                    if (pagename_list[i]== modesysnum)//当前页 用图片rectangle 和 text 作为按钮，
+                    {
+                        //当前按钮只有一个 不用克隆，直接修改模板元素属性
+                        //图片按钮没有脚本，只需要改变位置 显示的文字
+                        //图片按钮部分
+                        XmlNode example_rec_modechange_t = example_rec_modechange[0];
+                        //Location 图片的宽高，都需要-1
+                        XmlNode xmlnode_t = example_rec_modechange_t.SelectSingleNode("./properties/prop[@name='Location']");
+                        xmlnode_t.InnerText = (x_t-1).ToString() + " " + (y_t-1).ToString();
+                        //图片文字部分
+                        XmlNode example_text_modechange_t = example_text_modechange[0];
+                        //文字偏移量 预估写死
+                        xmlnode_t = example_text_modechange_t.SelectSingleNode("./properties/prop[@name='Location']");
+                        xmlnode_t.InnerText = (x_t +44 ).ToString() + " " + (y_t + 4).ToString();
+                        //图片按钮的文字显示
+                        xmlnode_t = example_text_modechange_t.SelectSingleNode("./properties/prop[@name='Text']");
+                        foreach (XmlNode xn in xmlnode_t)
+                        {
+                            xn.InnerText = btn_name;
+                        }
+                    }
+                    else//其他直接用按钮
+                    {
+                        //其他页按钮多个，需要动态生成，模板用克隆方式
+                        XmlNode example_btn_modechange_t = example_btn_modechange[0].CloneNode(true);
+                        //Text 
+                        XmlNode xmlnode_t = example_btn_modechange_t.SelectSingleNode("./properties/prop[@name='Text']");
+                        foreach (XmlNode xn in xmlnode_t)
+                        {
+                            xn.InnerText = btn_name;
+                        }
+                        //ToolTipText 
+                        xmlnode_t = example_btn_modechange_t.SelectSingleNode("./properties/prop[@name='ToolTipText']");
+                        foreach (XmlNode xn in xmlnode_t)
+                        {
+                            xn.InnerText = pagename_list[i];
+                        }
+                        //Location
+                        xmlnode_t = example_btn_modechange_t.SelectSingleNode("./properties/prop[@name='Location']");
+                        xmlnode_t.InnerText = x_t.ToString() + " " + y_t.ToString();
+
+                        //修改btn名称 添加到xml节点里
+                        XmlElement name_element = (XmlElement)example_btn_modechange_t;
+                        name_element.SetAttribute("Name", "btn_modechange_" + i.ToString());
+
+                        ShapesNode.AppendChild(example_btn_modechange_t);
+                    }
+                }  
                 #endregion
 
 
-
-                //删除不需要的模板节点
-                ShapesNode.RemoveChild(example_button[0]);
-                ShapesNode.RemoveChild(example_rect[0]);
-                ShapesNode.RemoveChild(example_ref_nowstatus[0]);
-                ShapesNode.RemoveChild(example_ref_checkresult[0]);
+                //删除不需要的模板节点(动态生成的画面元素 基本都要把模板删除）
+                ShapesNode.RemoveChild(example_button[0]);//模式按钮的模板
+                ShapesNode.RemoveChild(example_rect[0]);//模式切换矩形框的模板
+                ShapesNode.RemoveChild(example_ref_nowstatus[0]);//当前设备状态的模板
+                ShapesNode.RemoveChild(example_ref_checkresult[0]);//模式对比结果的元素模板
+                ShapesNode.RemoveChild(example_btn_modechange[0]);//模式页面切换的按钮模板
+                
 
 
                 //任何shape对象的TabOrder唯一 serialId唯一
@@ -2868,40 +2963,49 @@ namespace ImportXlsToDataTable
         //批量数据导入sqlite 自己封装的bulk类（sqlite不支持 SqlBulkCopy 操作）
         public void insertDB_sqlitebulk_ex(DataTable dt,string tablename)
         {
-            try { 
-            //用自定义sqlite类操作
-            SQLiteBulkInsert target;
-            //Close connect to verify records were not inserted
-            sqliteBlukCon.Close();
-            //target = new SQLiteBulkInsert(sqliteBlukCon, tablename);
-            target = TARGET;
-            sqliteBlukCon.Open();
-            target.CommitMax = 10000;//1w条数据 限制 默认值1w
-
-            //Insert less records than commitmax
-            foreach(DataRow r in dt.Rows)
+            try
             {
-                ArrayList ListTmp = new ArrayList();
-                //List<string> list = new List<string>();
-                for (int y = 0; y < dt.Columns.Count; y++)
+                if (dt.Rows.Count == 0)
                 {
-                    ListTmp.Add(r[y].ToString());
-                    
+                    ShowInfo("没有解析出数据，无法导入数据库。");
+                    return;
                 }
-                //object[] o_t = new object[] { ListTmp };
-                target.Insert(ListTmp.ToArray());
-            };
-
                 
-            //事务方式提交
-            target.Flush();
-            //操作记录数 有的话统计一下
-            //
-            ShowInfo("执行表" + tablename + "的bulk insert操作完成。");
+                //用自定义sqlite类操作
+                SQLiteBulkInsert target;
+                //Close connect to verify records were not inserted
+                sqliteBlukCon.Close();
+                //target = new SQLiteBulkInsert(sqliteBlukCon, tablename);
+                target = TARGET;
+                sqliteBlukCon.Open();
+                target.CommitMax = 10000;//1w条数据 限制 默认值1w
+
+
+
+                //Insert less records than commitmax
+                foreach (DataRow r in dt.Rows)
+                {
+                    ArrayList ListTmp = new ArrayList();
+                    //List<string> list = new List<string>();
+                    for (int y = 0; y < dt.Columns.Count; y++)
+                    {
+                        ListTmp.Add(r[y].ToString());
+
+                    }
+                    //object[] o_t = new object[] { ListTmp };
+                    target.Insert(ListTmp.ToArray());
+                };
+
+
+                //事务方式提交
+                target.Flush();
+                //操作记录数 有的话统计一下
+                //
+                ShowInfo("执行表" + tablename + "的bulk insert操作完成。");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                ShowInfo("执行表"+ tablename + "的bulk insert操作出错：" + ex.Message);
+                ShowInfo("执行表" + tablename + "的bulk insert操作出错：" + ex.Message);
 
             }
 
@@ -2932,9 +3036,13 @@ namespace ImportXlsToDataTable
         }
 
 
+
         #endregion  数据库相关
 
+        private void listView1_SelectedIndexChanged(object sender, EventArgs e)
+        {
 
+        }
     }
 }
 

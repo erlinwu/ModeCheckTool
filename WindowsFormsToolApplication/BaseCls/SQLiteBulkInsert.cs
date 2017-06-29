@@ -150,31 +150,43 @@ namespace DB.SQLITE.SQLiteBulkInsert
 
         public void Insert(object[] paramValues)
         {
-            if (paramValues.Length != m_parameters.Count)
-                throw new Exception("The values array count must be equal to the count of the number of parameters.");
-
-            m_counter++;
-
-            if (m_counter == 1)
+            try
             {
-                if (m_allowBulkInsert)
-                    m_trans = m_dbCon.BeginTransaction();
+                if (paramValues.Length != m_parameters.Count)
+                    throw new Exception("The values array count must be equal to the count of the number of parameters.");
 
-                m_cmd = m_dbCon.CreateCommand();
+                m_counter++;
+
+                if (m_counter == 1)
+                {
+                    if (m_allowBulkInsert)
+                        m_trans = m_dbCon.BeginTransaction();
+
+                    m_cmd = m_dbCon.CreateCommand();
+                    foreach (SQLiteParameter par in m_parameters.Values)
+                        m_cmd.Parameters.Add(par);
+
+                    m_cmd.CommandText = this.CommandText;
+                }
+
+                int i = 0;
                 foreach (SQLiteParameter par in m_parameters.Values)
-                    m_cmd.Parameters.Add(par);
-
-                m_cmd.CommandText = this.CommandText;
+                {
+                    par.Value = paramValues[i];
+                    i++;
+                }
+                //执行出错 会导致连接卡死（可能是sqlite的连接独占原因）
+                m_cmd.ExecuteNonQuery();
             }
-
-            int i = 0;
-            foreach (SQLiteParameter par in m_parameters.Values)
+            catch(Exception ex)
             {
-                par.Value = paramValues[i];
-                i++;
-            }
+                if (m_trans != null)
+                    m_trans.Dispose();
 
-            m_cmd.ExecuteNonQuery();
+                m_trans = null;
+                m_counter = 0;
+                throw new Exception("Could not do ExecuteNonQuery. See InnerException for more details:"+ex.Message);
+            }
 
             if (m_counter == m_commitMax)
             {
