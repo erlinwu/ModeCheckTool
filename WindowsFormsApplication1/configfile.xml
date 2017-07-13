@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<root>  
+ 
+  <!--数据库连接 sqlite-->
+  <dbinfo HOST="\\autotooldbfile.db" DBNAME="" USER="" PASSWORD="" DBTYPE="6"/>
+  <!--modeinfo 字段设置 必须按照顺序-->
+  <modeinfo_table>
+    <cname cname="stationname" desc="站点名称"/>
+    <cname cname="pagename" desc="画面名称"/>
+    <cname cname="modename" desc="模式名称"/>
+    <cname cname="deviceid" desc="设备编号"/>
+    <cname cname="standardvalue" desc="模式标准值"/>
+  </modeinfo_table>
+
+  </root>
