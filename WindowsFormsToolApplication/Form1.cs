@@ -194,26 +194,86 @@ namespace ImportXlsToDataTable
         {
             try
             {
-                comboBox_stationlist.Items.Clear();
                 //添加站点列表
-                for (int i = 0; i < stationinfo_cname_list.Count; i++)
+                comboBox_stationlist.Text = "";
+                comboBox_stationlist.Items.Clear();
+                if (stationinfo_cname_list==null||stationinfo_cname_list.Count == 0)
                 {
-                    comboBox_stationlist.Items.Add(stationinfo_desc_list[i]+stationinfo_cname_list[i]);
-                }
-                if (stationinfo_cname_list.Count == 0)
-                { 
                     ShowInfo("站点配置信息未获取到，请重新启动。");
+                    return;
                 }
                 else
                 {
+                    for (int i = 0; i < stationinfo_cname_list.Count; i++)
+                    {
+                        comboBox_stationlist.Items.Add(stationinfo_desc_list[i] + stationinfo_cname_list[i]);
+                    }
                     comboBox_stationlist.SelectedIndex = 0;
                 }
+
+
+                //添加系统列表
+                comboBox_syslist.Text = "";
+                comboBox_syslist.Items.Clear();
+                //查询数据库系统列表
+                List<string> station_syslist =new List<string>();
+                string sql_getpagename = "select distinct pagename from modeinfo where stationname='" + stationinfo_cname_list[comboBox_stationlist.SelectedIndex] + "';";
+                station_syslist = getDataList(sql_getpagename);
+                
+                if (station_syslist==null || station_syslist.Count == 0)
+                {
+                    ShowInfo("模式子系统配置信息未获取到");
+                }
+                else
+                {
+                    for (int i = 0; i < station_syslist.Count; i++)
+                    {
+                        comboBox_syslist.Items.Add(stationinfo_desc_list[i] + station_syslist[i]);
+                    }
+                    comboBox_syslist.SelectedIndex = 0;
+                }
+                
+
             }
             catch (Exception ex)
             {
-                ShowInfo("站点配置信息获取时出错："+ex.Message);
+                ShowInfo("站点相关配置信息获取时出错："+ex.Message);
             }
         }
+
+        //站点模式子系统列表刷新
+        private void comboBox_stationlist_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                comboBox_syslist.Text = "";
+                comboBox_syslist.Items.Clear();
+                //查询数据库系统列表
+                List<string> station_syslist = new List<string>();
+                string sql_getpagename = "select distinct pagename from modeinfo where stationname='" + stationinfo_cname_list[comboBox_stationlist.SelectedIndex] + "';";
+                station_syslist = getDataList(sql_getpagename);
+
+                if (station_syslist == null || station_syslist.Count == 0)
+                {
+                    ShowInfo("模式子系统配置信息未获取到");
+                }
+                else
+                {
+                    for (int i = 0; i < station_syslist.Count; i++)
+                    {
+                        comboBox_syslist.Items.Add(station_syslist[i]);
+                    }
+                    comboBox_syslist.SelectedIndex = 0;
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                ShowInfo("模式相关子系统配置信息获取出错：" + ex.Message);
+            }
+        }
+
         //清空模式数据库配置表
         private void button1_Click(object sender, EventArgs e)
         {
@@ -429,13 +489,13 @@ namespace ImportXlsToDataTable
                 string filepath = openExcelDialog();
                 if (filepath != "")
                 {
+                    string stationName;
                     IWorkbook workbook = null;
-                    workbook = ExcelToWorkBook_modecheck(@filepath);
+                    workbook = ExcelToWorkBook_modecheck(@filepath,out stationName);
                     
-                    if (dataTableTypeList != null)
+                    if (workbook != null)
                     {
                         //另存excel校对文件
-                        string stationName = stationinfo_cname_list[comboBox_stationlist.SelectedIndex];
                         saveExcelDialog(workbook, stationName + "_MODECHECK_RESULT");
                         ShowInfo("模式表excel校准文件生成并保存完毕。");
                     }
@@ -953,7 +1013,7 @@ namespace ImportXlsToDataTable
         }
 
         //模式表校对 生成workbook返回输出excel
-        public IWorkbook ExcelToWorkBook_modecheck(string filePath)//
+        public IWorkbook ExcelToWorkBook_modecheck(string filePath,out string STATIONID)//
         {
             
             FileStream fs = null;
@@ -962,7 +1022,7 @@ namespace ImportXlsToDataTable
             ISheet sheet = null;
 
 
-            string STATIONID = "";//车站缩写
+            STATIONID = "";//车站缩写
             string PAGENAME = "";//画面的名称
 
             string filename;//文件名
@@ -995,7 +1055,10 @@ namespace ImportXlsToDataTable
                         ICellStyle s_white = workbook.CreateCellStyle();
                         s_white.FillForegroundColor = HSSFColor.White.Index;
                         s_white.FillPattern = FillPattern.SolidForeground;
-
+                        //校对文字红色底色
+                        ICellStyle s_red = workbook.CreateCellStyle();
+                        s_red.FillForegroundColor = HSSFColor.Red.Index;
+                        s_red.FillPattern = FillPattern.SolidForeground;
 
                         //文件名称需要处理，把系统ID取出来，设备类表取的是第一个下划线前面的英文，统一处理成大写，保存为SYSID
                         int i_t;
@@ -1136,42 +1199,92 @@ namespace ImportXlsToDataTable
                                         List<string> tmp_list = new List<string>();
                                         foreach (string s in devid_list)
                                         {
-                                            tmp_list.Add("'" + s + "'");
+                                            tmp_list.Add('"' + s + '"');
                                         }
                                         str_tmp = string.Join(",", tmp_list);
-                                        string sql_getdata = "select devindex, devid from devicelist where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ");";
+                                        string sql_getdata = "select devindex, devid, sbdm from devicelist where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ");";
+
                                         using (_dbcon = new DBLib.DBLib(HOST, USER, PASSWORD, DBNAME, int.Parse(DBTYPE)))
                                         {
                                             DataSet ds_Result = _dbcon.GetData(sql_getdata);
                                             if (ds_Result == null|| ds_Result.Tables.Count == 0|| ds_Result.Tables[0].Rows.Count == 0)
                                             {
                                                 ShowInfo("校对模式表文件，查询设备列表时没有记录。");
-                                                return null;
+                                                //return null;
                                             }
                                             //处理ds到 设备类型 和 tagnames清单 2个list
-                                            for (int i = 0; i < ds_Result.Tables[0].Rows.Count; i++)
+                                            //for (int i = 0; i < ds_Result.Tables[0].Rows.Count; i++)
+                                            //{
+                                            //    devclass_list.Add(ds_Result.Tables[0].Rows[i][1].ToString());
+                                            //    devtagname_list.Add(ds_Result.Tables[0].Rows[i][0].ToString());
+                                            //}
+                                            //
+                                            string s1, s2;
+                                            foreach(string devid in devid_list)
                                             {
-                                                devclass_list.Add(ds_Result.Tables[0].Rows[i][1].ToString());
-                                                devtagname_list.Add(ds_Result.Tables[0].Rows[i][0].ToString());
+                                                s1 = "";
+                                                s2 = "";
+                                                if (ds_Result != null && ds_Result.Tables.Count > 0 && ds_Result.Tables[0].Rows.Count > 0)
+                                                {
+                                                    for (int i = 0; i < ds_Result.Tables[0].Rows.Count; i++)
+                                                    {
+                                                        if (devid == ds_Result.Tables[0].Rows[i][2].ToString())
+                                                        {
+                                                            s1 = ds_Result.Tables[0].Rows[i][0].ToString();
+                                                            s2 = ds_Result.Tables[0].Rows[i][1].ToString();
+                                                        }
+                                                    }
+                                                }
+                                                    
+                                                devclass_list.Add(s1);
+                                                devtagname_list.Add(s2);
                                             }
                                         }
 
                                         //取出所有的状态填充datatable
+                                        sheet.CreateRow(MSDB_RNUM + 1);
+                                        sheet.CreateRow(MSDB_RNUM + 2);
+                                        //说明文字
+                                        sheet.GetRow(MSDB_RNUM + 1).CreateCell(MSDB_CNUM + 1);
+                                        sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 1).SetCellValue("设备编号");
+                                        sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 1).CellStyle = s_white;
+                                        sheet.GetRow(MSDB_RNUM + 2).CreateCell(MSDB_CNUM + 1);
+                                        sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 1).SetCellValue("设备标识");
+                                        sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 1).CellStyle = s_white;
                                         for (int i = 0; i < devid_list.Count; i++)
                                         {
-                                            string cellvalue_class;
                                             //class
-                                            sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).SetCellValue(devclass_list[i]);
-                                            sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_white;
+                                            sheet.GetRow(MSDB_RNUM + 1).CreateCell(MSDB_CNUM + 2 + i);//未匹配出来的红色标记
+                                            if (devclass_list[i]=="") { 
+                                                sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).SetCellValue("无");
+                                                sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_red;
+                                            }
+                                            else
+                                            {
+                                                sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).SetCellValue(devclass_list[i]);
+                                                sheet.GetRow(MSDB_RNUM + 1).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_white;
+                                            }
+                                            
                                             //tagname
-                                            sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).SetCellValue(devtagname_list[i]);
-                                            sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_white;
+                                            sheet.GetRow(MSDB_RNUM + 2).CreateCell(MSDB_CNUM + 2 + i);//未匹配出来的红色标记
+                                            if (devclass_list[i] == "")
+                                            {
+                                                sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).SetCellValue("无");
+                                                sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_red;
+                                            }
+                                            else
+                                            {
+                                                sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).SetCellValue(devtagname_list[i]);
+                                                sheet.GetRow(MSDB_RNUM + 2).GetCell(MSDB_CNUM + 2 + i).CellStyle = s_white;
+                                            }
+                                            
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    
                 }
                 return workbook;
             }
@@ -1944,8 +2057,10 @@ namespace ImportXlsToDataTable
 
 
 
+
+
         #endregion  数据库相关
 
-
+        
     }
 }

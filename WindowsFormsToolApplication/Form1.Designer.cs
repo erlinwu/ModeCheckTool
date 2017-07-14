@@ -42,6 +42,8 @@
             this.label7 = new System.Windows.Forms.Label();
             this.btnImport = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.buttonCheckModeTable = new System.Windows.Forms.Button();
+            this.label9 = new System.Windows.Forms.Label();
             this.comboBox_stationlist = new System.Windows.Forms.ComboBox();
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
@@ -53,8 +55,8 @@
             this.buttonScreenClear = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.buttonScreenReflash = new System.Windows.Forms.Button();
-            this.label9 = new System.Windows.Forms.Label();
-            this.buttonCheckModeTable = new System.Windows.Forms.Button();
+            this.comboBox_syslist = new System.Windows.Forms.ComboBox();
+            this.label10 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -208,6 +210,8 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label10);
+            this.tabPage2.Controls.Add(this.comboBox_syslist);
             this.tabPage2.Controls.Add(this.buttonCheckModeTable);
             this.tabPage2.Controls.Add(this.label9);
             this.tabPage2.Controls.Add(this.comboBox_stationlist);
@@ -225,6 +229,27 @@
             this.tabPage2.Text = "工具栏";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // buttonCheckModeTable
+            // 
+            this.buttonCheckModeTable.Location = new System.Drawing.Point(130, 129);
+            this.buttonCheckModeTable.Margin = new System.Windows.Forms.Padding(4);
+            this.buttonCheckModeTable.Name = "buttonCheckModeTable";
+            this.buttonCheckModeTable.Size = new System.Drawing.Size(121, 29);
+            this.buttonCheckModeTable.TabIndex = 14;
+            this.buttonCheckModeTable.Text = "校对模式表";
+            this.buttonCheckModeTable.UseVisualStyleBackColor = true;
+            this.buttonCheckModeTable.Click += new System.EventHandler(this.buttonCheckModeTable_Click);
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(17, 136);
+            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(82, 15);
+            this.label9.TabIndex = 13;
+            this.label9.Text = "模式表校对";
+            // 
             // comboBox_stationlist
             // 
             this.comboBox_stationlist.FormattingEnabled = true;
@@ -234,11 +259,12 @@
             this.comboBox_stationlist.Name = "comboBox_stationlist";
             this.comboBox_stationlist.Size = new System.Drawing.Size(121, 23);
             this.comboBox_stationlist.TabIndex = 12;
+            this.comboBox_stationlist.SelectedIndexChanged += new System.EventHandler(this.comboBox_stationlist_SelectedIndexChanged);
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(17, 190);
+            this.label4.Location = new System.Drawing.Point(17, 191);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(52, 15);
@@ -342,26 +368,25 @@
             this.buttonScreenReflash.UseVisualStyleBackColor = true;
             this.buttonScreenReflash.Click += new System.EventHandler(this.buttonScreenReflash_Click);
             // 
-            // label9
+            // comboBox_syslist
             // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(17, 136);
-            this.label9.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(82, 15);
-            this.label9.TabIndex = 13;
-            this.label9.Text = "模式表校对";
+            this.comboBox_syslist.FormattingEnabled = true;
+            this.comboBox_syslist.Items.AddRange(new object[] {
+            "空"});
+            this.comboBox_syslist.Location = new System.Drawing.Point(130, 246);
+            this.comboBox_syslist.Name = "comboBox_syslist";
+            this.comboBox_syslist.Size = new System.Drawing.Size(121, 23);
+            this.comboBox_syslist.TabIndex = 15;
             // 
-            // buttonCheckModeTable
+            // label10
             // 
-            this.buttonCheckModeTable.Location = new System.Drawing.Point(130, 129);
-            this.buttonCheckModeTable.Margin = new System.Windows.Forms.Padding(4);
-            this.buttonCheckModeTable.Name = "buttonCheckModeTable";
-            this.buttonCheckModeTable.Size = new System.Drawing.Size(121, 29);
-            this.buttonCheckModeTable.TabIndex = 14;
-            this.buttonCheckModeTable.Text = "校对模式表";
-            this.buttonCheckModeTable.UseVisualStyleBackColor = true;
-            this.buttonCheckModeTable.Click += new System.EventHandler(this.buttonCheckModeTable_Click);
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(17, 250);
+            this.label10.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(67, 15);
+            this.label10.TabIndex = 16;
+            this.label10.Text = "选择系统";
             // 
             // Form1
             // 
@@ -416,6 +441,8 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button buttonCheckModeTable;
         private System.Windows.Forms.Label label9;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.ComboBox comboBox_syslist;
     }
 }
 
