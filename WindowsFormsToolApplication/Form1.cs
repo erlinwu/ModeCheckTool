@@ -119,11 +119,30 @@ namespace ImportXlsToDataTable
         }
 
 
-        //选择excel导入数据库
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                //清空数据库所有配置
+                this.button1_Click(sender, e);
+                this.button2_Click(sender, e);
+                this.button3_Click(sender, e);
+            }
+            catch (Exception ex)
+            {
+                ShowInfo(ex.Message);
+            }
+        }
+
+
+
+        //设备类别表导入数据库
         private void btnImport_Click(object sender, EventArgs e)
         {
             try
             {
+                ////清空一下表数据，以免重复
+                button2_Click(sender, e);
                 string filepath = openExcelDialog();
                 if (filepath!="")
                 {
@@ -134,7 +153,12 @@ namespace ImportXlsToDataTable
                     {
                         insertDB_sqlitebulk_ex(dataTableTypeList, "devicetype");
                     }
-                        
+
+                    this.ShowInfo("设备类表导入结束");
+                }
+                else
+                {
+                    this.ShowInfo("文件路径不能为空");
                 }
             }
             catch (Exception ex)
@@ -145,10 +169,13 @@ namespace ImportXlsToDataTable
             
         }
         //模式表配置导入
-        private void buttonImpMode_Click(object sender, EventArgs e)
+        public void buttonImpMode_Click(object sender, EventArgs e)
         {
             try
             {
+                //清空一下表数据，以免重复
+                this.button1_Click(sender, e);
+                //
                 string filepath = openExcelDialog();
                 if (filepath != "")
                 {
@@ -184,6 +211,9 @@ namespace ImportXlsToDataTable
         {
             try
             {
+                //清空一下表数据，以免重复
+                button3_Click(sender, e);
+                //
                 string filepath = openExcelDialog();
                 if (filepath != "")
                 {
@@ -195,6 +225,11 @@ namespace ImportXlsToDataTable
                     {
                         insertDB_sqlitebulk_ex(dataTableTypeList, "devicelist");
                     }
+                    this.ShowInfo("设备清单列表导入结束");
+                }
+                else
+                {
+                    this.ShowInfo("文件路径不能为空");
                 }
             }
             catch (Exception ex)
@@ -203,6 +238,7 @@ namespace ImportXlsToDataTable
             }
         }
 
+        //提示窗口刷新 停止 切换
         private void buttonScreenReflash_Click(object sender, EventArgs e)
         {
             if (buttonScreenReflash.Text == "停止刷新")
@@ -226,45 +262,47 @@ namespace ImportXlsToDataTable
         {
             try
             {
-                //添加站点列表
-                comboBox_stationlist.Text = "";
-                comboBox_stationlist.Items.Clear();
-                if (stationinfo_cname_list==null||stationinfo_cname_list.Count == 0)
+                if (tabControl1.SelectedIndex == 1)//只刷新选择导出tab的时候
                 {
-                    ShowInfo("站点配置信息未获取到，请重新启动。");
-                    return;
-                }
-                else
-                {
-                    for (int i = 0; i < stationinfo_cname_list.Count; i++)
+                    //添加站点列表
+                    comboBox_stationlist.Text = "";
+                    comboBox_stationlist.Items.Clear();
+                    if (stationinfo_cname_list == null || stationinfo_cname_list.Count == 0)
                     {
-                        comboBox_stationlist.Items.Add(stationinfo_desc_list[i] + stationinfo_cname_list[i]);
+                        ShowInfo("站点配置信息未获取到，请重新启动。");
+                        return;
                     }
-                    comboBox_stationlist.SelectedIndex = 0;
-                }
+                    else
+                    {
+                        for (int i = 0; i < stationinfo_cname_list.Count; i++)
+                        {
+                            comboBox_stationlist.Items.Add(stationinfo_desc_list[i] + stationinfo_cname_list[i]);
+                        }
+                        comboBox_stationlist.SelectedIndex = 0;
+                    }
 
 
-                //添加系统列表
-                comboBox_syslist.Text = "";
-                comboBox_syslist.Items.Clear();
-                //查询数据库系统列表
-                List<string> station_syslist =new List<string>();
-                string sql_getpagename = "select distinct pagename from modeinfo where stationname='" + stationinfo_cname_list[comboBox_stationlist.SelectedIndex] + "';";
-                station_syslist = getDataList(sql_getpagename);
-                
-                if (station_syslist==null || station_syslist.Count == 0)
-                {
-                    ShowInfo("模式子系统配置信息未获取到");
-                }
-                else
-                {
-                    for (int i = 0; i < station_syslist.Count; i++)
+                    //添加系统列表
+                    comboBox_syslist.Text = "";
+                    comboBox_syslist.Items.Clear();
+                    //查询数据库系统列表
+                    List<string> station_syslist = new List<string>();
+                    string sql_getpagename = "select distinct pagename from modeinfo where stationname='" + stationinfo_cname_list[comboBox_stationlist.SelectedIndex] + "';";
+                    station_syslist = getDataList(sql_getpagename);
+
+                    if (station_syslist == null || station_syslist.Count == 0)
                     {
-                        comboBox_syslist.Items.Add(stationinfo_desc_list[i] + station_syslist[i]);
+                        ShowInfo("模式子系统配置信息未获取到");
                     }
-                    comboBox_syslist.SelectedIndex = 0;
+                    else
+                    {
+                        for (int i = 0; i < station_syslist.Count; i++)
+                        {
+                            comboBox_syslist.Items.Add(stationinfo_desc_list[i] + station_syslist[i]);
+                        }
+                        comboBox_syslist.SelectedIndex = 0;
+                    }
                 }
-                
 
             }
             catch (Exception ex)
@@ -307,7 +345,7 @@ namespace ImportXlsToDataTable
         }
 
         //清空模式数据库配置表
-        private void button1_Click(object sender, EventArgs e)
+        public void button1_Click(object sender, EventArgs e)
         {
             string SqlString;
             SqlString = "delete from modeinfo;delete from modeshape;";
@@ -365,7 +403,7 @@ namespace ImportXlsToDataTable
             }
         }
 
-        //生成模式配置dpl文件
+        //生成模式配置dpl文件(20170726 配置写入画面 不写wincc数据库)
         private void buttonCreateModeDPL_Click(object sender, EventArgs e)
         {
             try
@@ -434,9 +472,8 @@ namespace ImportXlsToDataTable
                         List<string> modename_list = new List<string>();
                         modename_list = getDataList(sql_getmodename);
                         //3 MXLRMODX_SET_1.DPNAMES 
-                        //JNL DXT 78个dpnames
                         string sql_getdpnames = "select distinct t1.deviceid, t2.devindex ,t2.devid from modeinfo t1 left join devicelist t2 on t1.deviceid=t2.SBDM and t1.stationname=t2.stationid " +
-                                                " where stationname='" + stationName + "' and pagename='" + pagename_list[i] + "';";
+                                                " where stationname='" + stationName + "' and pagename='" + pagename_list[i] + "' and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null);";
                         List<string> dpname_list = new List<string>();//dpnames列表
                         List<string> devid_list = new List<string>();//设备的类型列表 和配置文件比较 转换成类型编号（转换不出来的置0）
                         getDataList_sp1(sql_getdpnames, ref dpname_list, ref devid_list);
@@ -494,7 +531,7 @@ namespace ImportXlsToDataTable
                        
                     //另存excel配置文件
                     saveExcelDialog(workbook, stationName+"_MODECHECK_SET");
-                    ShowInfo(stationName+"站的模式对比配置文件保存完毕。");
+                    ShowInfo(stationName+"站的模式对比配置文件生成。");
                 }
 
 
@@ -524,7 +561,7 @@ namespace ImportXlsToDataTable
                     {
                         //另存excel校对文件
                         saveExcelDialog(workbook, stationName + "_MODECHECK_RESULT");
-                        ShowInfo("模式表excel校准文件生成并保存完毕。");
+                        ShowInfo("模式表excel校准文件生成");
                     }
                     workbook = null;
                 }
@@ -588,8 +625,8 @@ namespace ImportXlsToDataTable
         {
             JArray ret_jsonobj = new JArray();
             string sql_str = "select distinct t1.deviceid,t2.devindex ,t2.devid,t1.width from modeinfo t1 "
-                +"left join devicelist t2 on t1.deviceid=t2.SBDM and t1.stationname=t2.stationid where stationname='" 
-                + stationName + "' and pagename='" + modesysnum + "' and width<>''; ";
+                + "left join devicelist t2 on t1.deviceid=t2.SBDM and t1.stationname=t2.stationid where stationname='"
+                + stationName + "' and pagename='" + modesysnum + "' and width<>'' and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null); ";
             try
             {
                 using (_dbcon = new DBLib.DBLib(HOST, USER, PASSWORD, DBNAME, int.Parse(DBTYPE)))
@@ -709,9 +746,9 @@ namespace ImportXlsToDataTable
                 //shapes节点
                 XmlNode ShapesNode = xdPanelExample.SelectSingleNode("//panel/shapes");
 
-                //背景图片选择
+                //背景图片选择 
                 XmlNode xmlnode_panelbackground = xdPanelExample.SelectSingleNode("//panel/properties/prop[@name='Image']/prop");
-                xmlnode_panelbackground.InnerText = "beijing/"+ stationName + "_"+modesysnum.Replace("_","-") + ".png";
+                xmlnode_panelbackground.InnerText = "background/"+ stationName + "_"+modesysnum.Replace("_","-") + ".png";//路径保存(重要，中画线要转下划线)
 
                 //当前模式文字 仅设置坐标即可
                 XmlNodeList example_text_nowmode = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PRIMITIVE_TEXT_NOWMODE']");
@@ -734,8 +771,11 @@ namespace ImportXlsToDataTable
                 {
                     pagename_list.Add(it.ToString());
                 }
-                string mode_control_name = get_mode_controlname(pagename_list, modesysnum);
-                string page_modeinfo = stationShowName + "," + stationName + "," + modesysnum + "," + mode_control_name;//
+                string mode_sysname;
+                string mode_sysside;
+                string mode_control_name = get_mode_controlname(pagename_list, modesysnum,out mode_sysname,out mode_sysside);
+                //例子 学林路,XLR,DXT,DXTB_MODA001,小系统,II端 
+                string page_modeinfo = stationShowName + "," + stationName + "," + modesysnum + "," + mode_control_name+"," + mode_sysname + ","+ mode_sysside;//页面大部分脚本显示公用信息
                 string[] location_arr_btnfirst= { "0","0"} ;
 
                 //Location Size Text 需要设置
@@ -870,6 +910,13 @@ namespace ImportXlsToDataTable
                     string devindex = (string)modeinfo_jsonobj[i].SelectToken("devindex");
                     string devid = (string)modeinfo_jsonobj[i].SelectToken("devid");
                     string width = (string)modeinfo_jsonobj[i].SelectToken("width");
+                    string deviceid = (string)modeinfo_jsonobj[i].SelectToken("deviceid"); 
+
+                    //信息提示
+                    if (devindex == "")
+                    {
+                        ShowInfo("模式对比画面，当前状态。第"+(i+1).ToString()+"列："+ deviceid + "没有匹配到对应的设备代码。");
+                    }
 
                     //dollarParameters 配置
                     XmlNode xmlnode_t = example_ref_nowstatus_t.SelectSingleNode("./properties/prop[@name='dollarParameters']/prop/prop[@name='Value']");
@@ -930,6 +977,30 @@ namespace ImportXlsToDataTable
                 #endregion
 
 
+                #region//5.模式配置导入画面脚本 （不利用wincc数据库进行保存）
+                XmlNode example_script = xdPanelExample.SelectSingleNode("//panel/events/script[@name='Initialize']");
+                string script_code_t = example_script.InnerText;
+                string script_code=get_panel_set(script_code_t);
+                if (script_code == "")
+                {
+                    ShowInfo("生成画面时脚本文件解析出错，请检查模板文件");
+                    return;
+                }
+                 
+                //example_script.InnerText = script_code;
+                example_script.InnerXml = "<![CDATA[" + script_code + "\r\n]]>";
+                #endregion
+
+                #region//6.模式画面切换按钮的自动生成
+                XmlNodeList example_btn_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PUSH_BUTTON_MODECHANGE']");
+                XmlNodeList example_rec_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='RECTANGLE_MODECHANGE']");
+                XmlNodeList example_text_modechange = xdPanelExample.SelectNodes("/panel/shapes/shape[@Name='PRIMITIVE_TEXT_MODECHANGE']");
+                
+                    
+                #endregion
+
+
+
                 //删除不需要的模板节点
                 ShapesNode.RemoveChild(example_button[0]);
                 ShapesNode.RemoveChild(example_rect[0]);
@@ -974,21 +1045,86 @@ namespace ImportXlsToDataTable
             }
         }
 
-
-        //根据模式分页信息 拼接 列入：XXTB_MODA001   DXTB_MODA001等等
-        public string get_mode_controlname(List<string> pagename_list, string modesysnum)
+        public string get_panel_set(string code_string)
         {
             try
             {
+                
+                string stationName;
+                stationName = stationinfo_cname_list[comboBox_stationlist.SelectedIndex];//站点缩写
+                string pagename = comboBox_syslist.SelectedItem.ToString();//panel页面名称
 
+                //生成配置清单
+                //1
+                string modelist;//模式列表
+                string sql_getmodename = "select distinct modename from modeinfo where stationname='" + stationName + "' and pagename='" + pagename + "';";
+                List<string> modename_list = new List<string>();
+                modename_list = getDataList(sql_getmodename);
+                modelist= (string.Join("&quot;, &quot;", modename_list.ToArray()));
+                
+                //2
+                string dpnamelist;//dpname list
+                string controltype;//设备类型 list
+                //
+                string sql_getdpnames = "select distinct t1.deviceid, t2.devindex ,t2.devid from modeinfo t1 left join devicelist t2 on t1.deviceid=t2.SBDM and t1.stationname=t2.stationid " +
+                                            " where stationname='" + stationName + "' and pagename='" + pagename + "' and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null);";
+                List<string> dpname_list = new List<string>();//dpnames列表
+                List<string> devid_list = new List<string>();//设备的类型列表 和配置文件比较 转换成类型编号（转换不出来的置0）
+                getDataList_sp1(sql_getdpnames, ref dpname_list, ref devid_list);
+                //
+                dpnamelist  = (string.Join("&quot;, &quot;", dpname_list.ToArray()));
+                //设备类型
+                List<string> controltype_list = new List<string>();//设备类型 列表
+                controltype_list = controltype_checkout(devid_list);//根据devid （TVF TDZ UFO FF1 FF2...）以及配置文件 转换出类型的编号
+                controltype = (string.Join("", controltype_list.ToArray()));
+
+                //3
+                string modevaluelist;//模式标准值清单
+                List<string> modevalue_list = new List<string>();//每种模式下面的标准值 列表
+                modevalue_list = modevalue_checkout(modename_list, stationName, pagename);//根据站点、系统号、模式编号3个关键字查询 得到设备运行标准状态列表
+                modevaluelist = (string.Join("&quot;, &quot;", modevalue_list.ToArray()));                                                                                  //
+
+                //替换对应的脚本内容
+                //dyn_string modelist = makeDynString("@modelist@");
+                //dyn_string dpnamelist = makeDynString("@dpnamelist@");
+                //dyn_string modevaluelist = makeDynString("@modevaluelist@");
+                //string controltype = "@controltype@";
+                string code_ret= code_string.Replace("@modelist@", modelist);
+                code_ret = code_ret.Replace("@dpnamelist@", dpnamelist);
+                code_ret = code_ret.Replace("@modevaluelist@", modevaluelist);
+                code_ret = code_ret.Replace("@controltype@", controltype);
+                return code_ret;
+            }
+            catch (Exception ex)
+            {
+                
+                ShowInfo("生成模式配置文件dpl时出错：" + ex.Message);
+                return "";
+            }
+
+        }
+
+
+        //根据模式分页信息 拼接 列入：XXTB_MODA001   DXTB_MODA001等等
+        public string get_mode_controlname(List<string> pagename_list, string modesysnum,out string mode_sysname_out,out string mode_sysside_out)
+        {
+            mode_sysname_out = "";
+            mode_sysside_out = " ";
+            try
+            {
+                
                 string modesysnum_t=Regex.Replace(modesysnum, @"\d", "");//系统名称数字过滤
                 string ret_dpname="";
                 int i_dxt = 1, i_sdt = 1, i_xxta=1,i_xxtb = 1;
                 int end_num = 1;
                 IEnumerable<JToken> stv = null;
+                IEnumerable<JToken> modesysname = null;
+                IEnumerable<JToken> modesysside = null;
                 for (int i = 0; i < pagename_list.Count; i++)
                 {
                     stv = MODECHECK_PANELINFO.SelectTokens("$.[?(@.cname == '" + modesysnum_t + "')].sysid");
+                    modesysname = MODECHECK_PANELINFO.SelectTokens("$.[?(@.cname == '" + modesysnum_t + "')].modesysname");
+                    modesysside = MODECHECK_PANELINFO.SelectTokens("$.[?(@.cname == '" + modesysnum_t + "')].modesysside");
                     //这部分后续优化掉
                     if (pagename_list[i].IndexOf("_XII") >= 0)
                     {        
@@ -1023,6 +1159,15 @@ namespace ImportXlsToDataTable
                         {
                             ret_dpname = stv.ToList()[0].ToString();
                         }
+                        if (modesysname.Count() > 0)//中文系统缩写获取
+                        {
+                            mode_sysname_out = modesysname.ToList()[0].ToString();
+                        }
+                        if (modesysside.Count() > 0)//系统AB端的获取 大系统和隧道系统没有，直接空格
+                        {
+                            mode_sysside_out = modesysside.ToList()[0].ToString();
+                        }
+                        
                         break;
                     }
                     
@@ -1465,23 +1610,33 @@ namespace ImportXlsToDataTable
                                             string str_cvalue = sheet.GetRow(i).GetCell(MOSHI_CNUM).ToString();
                                             int out_i;
                                             
-                                            if (str_cvalue!=""&& int.TryParse(str_cvalue, out out_i))
+                                            if (str_cvalue!="")
                                             {
-                                                modeid_list.Add(str_cvalue.Trim());
-                                                //模式单元格的宽高获取
-                                                float w_t = 0;
-                                                float h_t = 0;
-                                                NPOI.ExcelExtension.IsMergeCellShape(sheet.GetRow(i).GetCell(MOSHI_CNUM),out h_t, out w_t);
-                                                btnwidth_list.Add(w_t);
-                                                btnheight_list.Add(h_t);
+                                                if (int.TryParse(str_cvalue, out out_i))
+                                                {
+                                                    modeid_list.Add(str_cvalue.Trim());
+                                                    //模式单元格的宽高获取
+                                                    float w_t = 0;
+                                                    float h_t = 0;
+                                                    NPOI.ExcelExtension.IsMergeCellShape(sheet.GetRow(i).GetCell(MOSHI_CNUM), out h_t, out w_t);
+                                                    btnwidth_list.Add(w_t);
+                                                    btnheight_list.Add(h_t);
+                                                }
+                                                else
+                                                {
+                                                    ShowInfo("sheet"+ PAGENAME +"的第"+i.ToString()+"行的模式号不是纯数字");
+                                                }
+                                                
 
                                             }
                                             else if (IsMerge)
                                             {
+                                                
                                                 continue;
                                             }
                                             else
                                             {
+                                                //无内容，模式读完
                                                 break;
                                             }
 
@@ -1787,7 +1942,7 @@ namespace ImportXlsToDataTable
                                             tmp_list.Add('"' + s + '"');
                                         }
                                         str_tmp = string.Join(",", tmp_list);
-                                        string sql_getdata = "select devindex, devid, sbdm from devicelist where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ");";
+                                        string sql_getdata = "select devindex, devid, sbdm from devicelist where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ") and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null); ";
 
                                         using (_dbcon = new DBLib.DBLib(HOST, USER, PASSWORD, DBNAME, int.Parse(DBTYPE)))
                                         {
@@ -2195,7 +2350,9 @@ namespace ImportXlsToDataTable
                         JObject jsonset_t = new JObject(
                                 new JProperty("cname", xePort.Attribute("cname").Value.ToString()),
                                 new JProperty("sysid", xePort.Attribute("sysid").Value.ToString()),
-                                new JProperty("desc", xePort.Attribute("desc").Value.ToString())
+                                new JProperty("desc", xePort.Attribute("desc").Value.ToString()),
+                                new JProperty("modesysname", xePort.Attribute("modesysname").Value.ToString()),
+                                new JProperty("modesysside", xePort.Attribute("modesysside").Value.ToString())
                                 );
                         MODECHECK_PANELINFO.Add(jsonset_t);
                     }
@@ -2389,7 +2546,7 @@ namespace ImportXlsToDataTable
                     foreach(string mn in modename_list)
                     {
                         string getDataList= "select t1.standardvalue,t2.devid from modeinfo t1 left join devicelist t2 on t1.deviceid=t2.SBDM and t1.stationname=t2.stationid " +
-                                                " where stationname='" + stationName + "' and pagename='" + pagename + "' and modename='"+ mn +"';";
+                                                " where stationname='" + stationName + "' and pagename='" + pagename + "' and modename='"+ mn + "' and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null)";
                         
                         DataSet ds_Result = _dbcon.GetData(getDataList);
 
@@ -2510,13 +2667,13 @@ namespace ImportXlsToDataTable
                     //workbook = null;
                     //streamMemory.Close();
                     //streamMemory.Dispose();
-
+                    ShowInfo(filename + "文件保存完毕");
                 }
-
+                
             }
             catch (Exception ex)
             {
-                ShowInfo("到处excel文件出错："+ex.Message);
+                ShowInfo(filename+"excel文件保存出错：" +ex.Message);
             }
         }
 
@@ -2538,11 +2695,12 @@ namespace ImportXlsToDataTable
                 {
                     xmldoc.Save(dialog.FileName);
                 }
+                ShowInfo(filename+"xml文件生成完毕");
 
             }
             catch (Exception ex)
             {
-                ShowInfo("保存xml文件出错：" + ex.Message);
+                ShowInfo(filename+"保存xml文件出错：" + ex.Message);
             }
         }
 
@@ -2773,8 +2931,11 @@ namespace ImportXlsToDataTable
                 
         }
 
+
         #endregion  数据库相关
 
-        
+
     }
 }
+
+

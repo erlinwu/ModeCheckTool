@@ -62,6 +62,14 @@
       <HintPath>packages\EntityFramework.6.0.0\lib\net40\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="IBatisNet.Common, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\MyBatis.NET.1.6.4\lib\IBatisNet.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IBatisNet.DataMapper, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\MyBatis.NET.1.6.4\lib\IBatisNet.DataMapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="IBM.Data.DB2">
       <HintPath>DB2DLL\IBM.Data.DB2.dll</HintPath>
     </Reference>
