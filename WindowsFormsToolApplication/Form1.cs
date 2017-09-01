@@ -35,8 +35,13 @@ using Newtonsoft.Json.Linq;
 //
 using System.Web;
 
+//xml帮助类
+using XMLHelper;
+using System.Net;
+using FileHelper;
 
-
+//http request 帮助类
+using HttpRequestHelper;
 
 namespace ImportXlsToDataTable
 {
@@ -80,7 +85,10 @@ namespace ImportXlsToDataTable
         string MODECHECK_SETFILEPATH;
         //模式对比 panel画面的模板路径
         string MODECHECK_PANELEXAMPLEPATH;
-
+        //panel文件导入导出的路径
+        string PANEL_INPUTFILEPATH;
+        string PANEL_OUTPUTFILEPATH;
+        string PANEL_BACKGROUND_COLOR;//panel背景颜色设置
 
         //dp的类名
         string MODESET_TYPENAME="";
@@ -96,7 +104,9 @@ namespace ImportXlsToDataTable
         JArray MODECHECK_PANELINFO = new JArray();
         //模式对比画面 矩形框的颜色信息 json
         JArray MODECHECK_RECTCOLOR = new JArray();//
-        
+        //http服务访问地址
+        string httpurl_addGraphicPosition;
+        string httpurl_getGraphicPositionByParams;
 
         #endregion
 
@@ -123,10 +133,10 @@ namespace ImportXlsToDataTable
         {
             try
             {
-                //清空数据库所有配置
-                this.button1_Click(sender, e);
-                this.button2_Click(sender, e);
-                this.button3_Click(sender, e);
+                //清空数据库所有配置 20170829 暂时不清空 调试用
+                //this.button1_Click(sender, e);
+                //this.button2_Click(sender, e);
+                //this.button3_Click(sender, e);
             }
             catch (Exception ex)
             {
@@ -212,7 +222,7 @@ namespace ImportXlsToDataTable
             try
             {
                 //清空一下表数据，以免重复
-                button3_Click(sender, e);
+                //button3_Click(sender, e);
                 //
                 string filepath = openExcelDialog();
                 if (filepath != "")
@@ -1101,8 +1111,6 @@ namespace ImportXlsToDataTable
                 ShapesNode.RemoveChild(example_ref_checkresult[0]);//模式对比结果的元素模板
                 ShapesNode.RemoveChild(example_btn_modechange[0]);//模式页面切换的按钮模板
                 
-
-
                 //任何shape对象的TabOrder唯一 serialId唯一
                 int TabOrder = 1;
                 //shpaes下面所有的ref和shape进行TabOrder 编号
@@ -1113,8 +1121,6 @@ namespace ImportXlsToDataTable
                     xmlnode_t.InnerText = TabOrder.ToString();
                     TabOrder = TabOrder + 1;
                 }
-
-
 
                 //所有引用panel的referenceId唯一
                 int referenceId = 1;
@@ -1713,7 +1719,7 @@ namespace ImportXlsToDataTable
                                                     //模式单元格的宽高获取
                                                     float w_t = 0;
                                                     float h_t = 0;
-                                                    NPOI.ExcelExtension.IsMergeCellShape(sheet.GetRow(i).GetCell(MOSHI_CNUM), out h_t, out w_t);
+                                                    ExcelExtension.IsMergeCellShape(sheet.GetRow(i).GetCell(MOSHI_CNUM), out h_t, out w_t);
                                                     btnwidth_list.Add(w_t);
                                                     btnheight_list.Add(h_t);
                                                 }
@@ -2037,7 +2043,7 @@ namespace ImportXlsToDataTable
                                             tmp_list.Add('"' + s + '"');
                                         }
                                         str_tmp = string.Join(",", tmp_list);
-                                        string sql_getdata = "select devindex, devid, sbdm from devicelist where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ") and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null); ";
+                                        string sql_getdata = "select devindex, devid, sbdm from devicelist t2 where stationid = '" + STATIONID + "' and sbdm in(" + str_tmp + ") and (t2.sysid='DXTB' or t2.sysid='XXTB' or t2.sysid='SDTB' or t2.sysid is null); ";
 
                                         using (_dbcon = new DBLib.DBLib(HOST, USER, PASSWORD, DBNAME, int.Parse(DBTYPE)))
                                         {
@@ -2513,6 +2519,18 @@ namespace ImportXlsToDataTable
                     this.ShowInfo("模式表校对用配置modetable_check丢失。请查看并修改配置文件。");
                 }
 
+                //获取模式检查表的配置文件dpl的生成模板
+                XElement xePanelRoot = xeRoot.Descendants("panelfile").First();
+                PANEL_INPUTFILEPATH = System.Environment.CurrentDirectory + xePanelRoot.Attribute("input_filepath").Value.ToString();
+                PANEL_OUTPUTFILEPATH = System.Environment.CurrentDirectory + xePanelRoot.Attribute("output_filepath").Value.ToString();
+                PANEL_BACKGROUND_COLOR = xePanelRoot.Attribute("background_color").Value.ToString();
+                //访问http服务地址 添加画面信息；获取画面信息
+                httpurl_addGraphicPosition= xePanelRoot.Attribute("httpurl_addGraphicPosition").Value.ToString();
+                httpurl_getGraphicPositionByParams = xePanelRoot.Attribute("httpurl_getGraphicPositionByParams").Value.ToString();
+
+
+                if (PANEL_INPUTFILEPATH == "" || PANEL_OUTPUTFILEPATH == "")
+                    this.ShowInfo("PANEL文件导入导出路径配置丢失，无法生成画面文件。");
 
 
                 //var jsonset = JsonConvert.SerializeObject(MODECHECK_JSONSET);
@@ -3042,6 +3060,455 @@ namespace ImportXlsToDataTable
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+        //生成panel画面
+        private void button_createpanel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+
+                string stationName = stationinfo_cname_list[comboBox_stationlist.SelectedIndex];
+                string stationShowName = stationinfo_desc_list[comboBox_stationlist.SelectedIndex];
+
+                if (stationName == "" )
+                {
+                    MessageBox.Show("请选择站点进行画面生成", "信息提示框", MessageBoxButtons.OK,
+                                    MessageBoxIcon.Information, MessageBoxDefaultButton.Button1);
+                    return;
+                }
+
+                //从panelfile导入xml文件 循环进行处理  PANEL_OUTPUTFILEPATH
+                DirectoryInfo spath = new DirectoryInfo(PANEL_INPUTFILEPATH); 
+                List<FileInformation> xmlfilesname = FileHelper.DirectoryAllFiles.GetAllFiles(spath, ".xml");
+
+                if (xmlfilesname != null && xmlfilesname.Count > 0)
+                {
+                    //获取taglist全部信息 不进行重复抽取数据的操作
+                    JArray ret_jsonobj = new JArray();
+                    string sqlstr = "select DEVINDEX,SBDM,beizhu3 as SYSID,beizhu2 as CLASSID from devicelist where stationid='" + stationName + "' and devindex<>''  and devindex<>'' and sysid<>'' and classid<>'';";
+                    ret_jsonobj = get_jsonobj_bysqlstr(sqlstr);
+                    if (ret_jsonobj == null)
+                    {
+                        ShowInfo(stationName + "的数据未导入，无法自动生成相关画面。");
+                        return;
+                    }
+                    foreach (FileInformation fileinfo in xmlfilesname)
+                    {
+                        CreatePanel(fileinfo.FilePath, stationName, stationShowName, ret_jsonobj);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowInfo("生成panel画面文件时出错：" + ex.Message);
+                
+            }
+
+        }
+
+        //获取全部的devicelist的数据 转成jsonobject
+        //通用方法 传递查询语句，返回对象属性根据字段名称来生成
+        public JArray get_jsonobj_bysqlstr(string sql_str)
+        {
+            JArray ret_jsonobj = new JArray();
+            try
+            {
+                using (_dbcon = new DBLib.DBLib(HOST, USER, PASSWORD, DBNAME, int.Parse(DBTYPE)))
+                {
+                    DataSet ds_Result = _dbcon.GetData(sql_str);
+
+                    if (ds_Result != null)
+                    {
+                        if (ds_Result != null && ds_Result.Tables.Count != 0 && ds_Result.Tables[0].Rows.Count != 0)
+                        {
+                            foreach (DataRow mDr in ds_Result.Tables[0].Rows)
+                            {
+                                JObject jsonset_t = new JObject();
+                                foreach (DataColumn mDc in ds_Result.Tables[0].Columns)
+                                {
+                                    jsonset_t.Add(new JProperty(mDc.ColumnName, mDr[mDc].ToString()));
+                                }   
+                                //json数组结果集
+                                ret_jsonobj.Add(jsonset_t);
+                            }
+                            return ret_jsonobj;
+
+                        }
+                        else
+                        {
+                            ShowInfo("查询语句未查到数据：" + sql_str);
+                            return null;
+                        }
+                    }
+                    else
+                    {
+                        ShowInfo("查询语句执行出错：" + sql_str);
+                        return null;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                ShowInfo("获取数据信息时出错：" + ex.Message);
+                return null;
+            }
+
+        }
+
+        
+
+        //生成画面文件 自动保存到给定路径下
+        public void CreatePanel(string sPath, string stationName,string stationShowName, JArray taginfo_jsonobj)
+        {
+            string output_filename="";//不含后缀文件名
+            try
+            {
+                
+                if (!File.Exists(sPath))
+                {
+                    this.ShowInfo("文件:" + sPath + "已丢失，不存在。");
+                    return;
+                }
+                output_filename = Path.GetFileNameWithoutExtension(sPath);//不含后缀文件名
+
+                //获取上次保存的画面信息
+                string urlstr_t= httpurl_getGraphicPositionByParams;
+                HttpRequestEx httpobjr_t = new HttpRequestEx();
+                string retr_t = string.Empty;
+                retr_t = httpobjr_t.HttpRequest_Call(urlstr_t, "graphicName=" + output_filename);//同步方式调用
+                //返回画面信息
+                //{"rows":[{"devIndex":"MXLR_TEST","graphicName":"xlr_panel_test","pid":2,
+                //"position":"位置1","positionCode":"位置2","sbdm":"设备代码","updateTime":"2017-08-31 14:05:51"}],"total":1}
+                JObject retobj=new JObject();
+                JArray json_panelinfo_get=new JArray();
+                if (retr_t != "")
+                {
+                    retobj = (JObject)JsonConvert.DeserializeObject(retr_t);//返回的画面信息对象
+                    json_panelinfo_get = JArray.Parse(retobj.SelectToken("rows").ToString());//画面信息取出
+                }
+                
+
+                JArray json_ary = new JArray();//上传平台的画面信息json队列
+
+                //读取模板文件
+                XmlDocument xdPanelExample = new XmlDocument();  //实例化一个XmlDocument
+                xdPanelExample.Load(sPath);
+                
+                //shapes节点
+                XmlNode ShapesNode = xdPanelExample.SelectSingleNode("//panel/shapes");
+
+                //背景图片 设置 暂时空白 如果没有该节点 需要自动生成（后续考虑）
+                XmlNode xmlnode_panelbackground = xdPanelExample.SelectSingleNode("//panel/properties/prop[@name='Image']/prop");
+                if (xmlnode_panelbackground != null)
+                {
+                    xmlnode_panelbackground.InnerText = "background/" + stationName + "_*.png";
+                }
+
+                //背景颜色设置  <prop name="BackColor">{38,46,60}</prop>
+                xmlnode_panelbackground = xdPanelExample.SelectSingleNode("//panel/properties/prop[@name='BackColor']");
+                if (xmlnode_panelbackground != null)
+                {
+                    xmlnode_panelbackground.InnerText = PANEL_BACKGROUND_COLOR;
+
+                }
+                int referenceId = 1;//保证唯一
+                int taborder = 1000;//画面元素tab顺序 任何shape对象的TabOrder唯一 serialId唯一
+                string tagname = "";//图元绑定的tagname
+                string classid = "";//图元的路径
+                string sysid = "";//设备所属系统id
+                string Geometry = "1 0 0 1 0 0";//相对位置
+
+                //在上次画面生成时未出现的设备代码
+                List<string> sSBDM_new = new List<string>();
+                //没有对应点表信息的
+                List<string> sSBDM_nosetting = new List<string>();
+                //获取所有 PRIMITIVE_TEXT
+                XmlNodeList text_replace_list = xdPanelExample.SelectNodes("/panel/shapes/shape[@shapeType='PRIMITIVE_TEXT']");
+                foreach (XmlNode text_label in text_replace_list)
+                {
+                    
+                    //获取 PRIMITIVE_TEXT xmlnode （正常监控画面应该都有）
+                    XmlNode xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Text']/prop[@name='zh_CN.utf8']");
+                    if (xmlnode_t != null)
+                    {
+                        //设备编号获取
+                        string device_code = xmlnode_t.InnerText;
+                        //根据设备代码 获取对应的 tagname（点表名） 和 filename（设备类型）
+                        tagname = "";
+                        classid = "";
+                        sysid = "";
+                        foreach (var r in taginfo_jsonobj)
+                        {
+                            if (device_code == (string)r.SelectToken("SBDM"))
+                            {
+                                tagname = (string)r.SelectToken("DEVINDEX");
+                                classid = (string)r.SelectToken("CLASSID");//根据大类来生成图元的路径
+                                sysid = (string)r.SelectToken("SYSID");
+                                break;
+                            }
+                            
+                        }
+                        if(tagname=="" || classid == "" || sysid == "")
+                        {
+                            sSBDM_nosetting.Add(device_code);
+                            continue;//未匹配到结果
+                        }
+
+                        //text位置获取
+                        xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Location']");
+                        string[] location_arr;
+                        string x = "0";
+                        string y = "0";
+
+                        if (xmlnode_t != null)
+                        { 
+                             location_arr = xmlnode_t.InnerText.Split(' ');
+                             x = location_arr[0].ToString();
+                             y = location_arr[1].ToString(); 
+                        }
+                        //Geometry获取
+                        xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Geometry']");
+                        if(xmlnode_t!=null) Geometry = xmlnode_t.InnerText;
+                        //上传panel信息
+                        json_ary.Add(new JObject(new JProperty("devIndex", tagname),
+                                                 new JProperty("position", x + " " + y),
+                                                 new JProperty("positionCode", Geometry),
+                                                 new JProperty("sbdm", device_code),
+                                                 new JProperty("graphicName", output_filename)
+                                                 )
+                                    );
+
+                        //画面信息对比 根据sbdm进行对比：位置/有无
+                        if (json_panelinfo_get != null)
+                        {
+                            int sFlag = 0;
+                            string sDate_t = "";
+                            for (int i = 0; i < json_panelinfo_get.Count; i++)
+                            {
+                                sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                                //SelectToken 方法使用
+                                if (device_code== (string)json_panelinfo_get[i].SelectToken("sbdm"))//记录匹配情况下，对比位置
+                                {
+                                    if((string)json_panelinfo_get[i].SelectToken("position")== x + " " + y&& (string)json_panelinfo_get[i].SelectToken("positionCode")== Geometry)
+                                    {
+                                        ((JObject)json_panelinfo_get[i])["pid"] = "exist_ok";
+                                    }
+                                    else
+                                    {
+                                        ((JObject)json_panelinfo_get[i])["pid"] = "exist_positiondiff";
+                                    }
+                                    sFlag = 1;
+
+
+                                }
+    
+                            }
+                            if (sFlag == 1)
+                            {
+                                sSBDM_new.Add(device_code);
+                            }
+                            
+                        }
+
+                        //根据设备编号获取对应图元信息
+                        //1.referenceId / Name  /TabOrder 编号都要唯一
+                        //2.FileName 根据类型生成
+                        //3.Location 用x,y生成。 Geometry / 固定格式： 1 0 0 1 0 0
+                        //4.dollarParameters - dollarParameter - Value 获取 tagname
+
+                        string xpath_t = "/panel/shapes/reference[@referenceId='" + referenceId.ToString() + "']/properties/";
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='FileName']", "objects/"+ sysid + "/"+ classid + ".xml");//objects/EMCS/DDT.xml
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='Location']", (Convert.ToDouble(x) + 10).ToString() + " "+ (Convert.ToDouble(y) + 10).ToString());
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='Geometry']", Geometry);//
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='TabOrder']", taborder.ToString());
+                        //
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='dollarParameters']/prop[@name='dollarParameter']/prop[@name='Dollar']", "$dp");
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='dollarParameters']/prop[@name='dollarParameter']/prop[@name='Value']", tagname);
+                        //设置reference 图元属性 
+                        XmlNode refnode_t = xdPanelExample.SelectSingleNode("/panel/shapes/reference[@referenceId='" + referenceId.ToString() + "']");//第一个
+                        if (refnode_t != null)
+                        {
+                            XmlElement refnode_element = (XmlElement)refnode_t;
+                            refnode_element.SetAttribute("Name", "PANEL_REF"+ referenceId.ToString());
+                            refnode_element.SetAttribute("parentSerial", "-1"); 
+                        }
+
+                        //id自增
+                        referenceId++;
+                        taborder++;
+                    }
+
+
+                }
+                //画面所含设备变化提示通知
+                if (json_panelinfo_get != null)
+                {
+                    string sMsg = "";
+                    string sDate_t = "";
+                    List<string> sSBDM_t1 = new List<string>();
+                    List<string> sSBDM_t2 = new List<string>();
+                    List<string> sSBDM_t3 = new List<string>();
+                    for (int i = 0; i < json_panelinfo_get.Count; i++)
+                    {                                                                     
+                        if ((string)json_panelinfo_get[i].SelectToken("pid")== "exist_positiondiff")//记录匹配情况下，对比位置
+                        {
+                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                            sSBDM_t1.Add((string)json_panelinfo_get[i].SelectToken("sbdm"));
+                        }
+                        else if((string)json_panelinfo_get[i].SelectToken("pid") == "exist_ok")
+                        {
+                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                            sSBDM_t2.Add((string)json_panelinfo_get[i].SelectToken("sbdm"));
+                        }
+                        else
+                        {
+                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                            sSBDM_t3.Add((string)json_panelinfo_get[i].SelectToken("sbdm"));
+                        }
+
+                    }
+                    if (sSBDM_t1.Count>0)
+                    {
+                        sMsg = "提示：画面" + output_filename + "中的设备代码" + string.Join(",", sSBDM_t1.ToArray()) + "的位置与" + sDate_t + "的画面生成操作不同。";
+                        ShowInfo(sMsg);
+                    }
+                    if (sSBDM_t2.Count > 0)
+                    {
+                        sMsg = "提示：画面" + output_filename + "中的设备代码" + string.Join(",", sSBDM_t2.ToArray()) + "与" + sDate_t + "的画面生成操作中的信息一致。";
+                        ShowInfo(sMsg);
+                        
+                    }
+                    if (sSBDM_t3.Count > 0)
+                    {
+                        sMsg = "提示：画面" + output_filename + "与" + sDate_t + "生成时设备代码：" + string.Join(",", sSBDM_t3.ToArray()) + "在本次生成时未出现。";
+                        ShowInfo(sMsg);
+                    }
+                    if (sSBDM_new.Count > 0)
+                    {
+                        sMsg = "提示：画面" + output_filename + "本次生成新增设备代码：" + string.Join(",", sSBDM_new.ToArray()) ;
+                        ShowInfo(sMsg);
+                    }
+                }
+                if (sSBDM_nosetting.Count > 0)
+                {
+                    ShowInfo("画面" + output_filename + "本次生成中设备代码：" + string.Join(",", sSBDM_nosetting.ToArray()) + "未获取到对应的点表信息。");
+                }
+
+                //画面记录信息
+                if(json_ary.Count>0)
+                {
+                    string urlstr = httpurl_addGraphicPosition;
+                    HttpRequestEx httpobj = new HttpRequestEx();
+                    string ret = string.Empty;
+                    //ret = httpobj.HttpRequest_Call(urlstr, json_ary.ToString());//同步方式调用
+                    httpobj.HttpRequest_AsyncCall(urlstr, "posList=" + json_ary.ToString());//异步方式调用
+                    //HttpWeb_SavePanelInfo(urlstr, json_ary);
+                    ShowInfo("画面信息保存操作，调用服务（" + urlstr + "）返回：" + ret);
+                }
+                
+
+                //保存xml文件 
+                sPath =sPath.Replace(PANEL_INPUTFILEPATH, PANEL_OUTPUTFILEPATH);//可能有嵌套文件夹的情况产生
+                xdPanelExample.Save(sPath);//
+                
+            }
+   
+            catch (Exception ex)
+            {
+                this.ShowInfo("生成监视画面"+ output_filename + "时出错：" + ex.Message);
+
+            }
+        }
+
+        public string HttpWeb_SavePanelInfo(string urlstr, JArray json_ary) {
+
+            try
+            {
+
+                string send_jsonstr = json_ary.ToString();
+                HttpWebRequest request = WebRequest.Create(urlstr) as HttpWebRequest;//
+                request.Timeout = 3111;
+                request.Method = "post";
+                request.KeepAlive = true;
+                request.AllowAutoRedirect = false;
+                request.ContentType = "application/x-www-form-urlencoded";
+                byte[] postdatabtyes = Encoding.UTF8.GetBytes("posList="+ send_jsonstr);
+                request.ContentLength = postdatabtyes.Length;
+                Stream requeststream = request.GetRequestStream();
+                requeststream.Write(postdatabtyes, 0, postdatabtyes.Length);
+                requeststream.Close();
+                string resp;
+            
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+                    resp = sr.ReadToEnd();
+                }
+                return resp;
+            }
+            catch(Exception ex)
+            {
+                ShowInfo("调用HttpWeb服务("+ urlstr + ")出错:" + ex.Message);
+                return "";
+            }
+            
+        }
+
+        //调用java http接口 后续使用httpclient调用
+        private void button4_Click(object sender, EventArgs e)
+        {
+
+            string urlstr = "http://128.64.90.37:8084/autotools/dataAccess/getGraphicPositionByParams/";
+            try
+            {
+
+                string send_jsonstr = "xlr_panel_test";
+                HttpWebRequest request = WebRequest.Create(urlstr) as HttpWebRequest;//
+                request.Method = "post";
+                request.KeepAlive = true;
+                request.AllowAutoRedirect = false;
+                request.ContentType = "application/x-www-form-urlencoded";
+                byte[] postdatabtyes = Encoding.UTF8.GetBytes("graphicName=" + send_jsonstr);
+                request.ContentLength = postdatabtyes.Length;
+                Stream requeststream = request.GetRequestStream();
+                requeststream.Write(postdatabtyes, 0, postdatabtyes.Length);
+                requeststream.Close();
+                string resp;
+
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    StreamReader sr = new StreamReader(response.GetResponseStream(), Encoding.UTF8);
+                    resp = sr.ReadToEnd();
+                }
+                JObject retobj =(JObject)JsonConvert.DeserializeObject(resp);
+                JArray jet = JArray.Parse(retobj.SelectToken("rows").ToString());
+
+            }
+            catch (Exception ex)
+            {
+                ShowInfo("调用HttpWeb服务(" + urlstr + ")出错:" + ex.Message);
+                
+            }
+            
+        }
+
+        public void button5_Click(object sender, EventArgs e)
+        {
+            JArray json_ary = new JArray();
+            json_ary.Add(new JObject(new JProperty("devIndex", "MXLR_TEST"),
+                                                 new JProperty("position","位置1"),
+                                                 new JProperty("positionCode", "位置2"),
+                                                 new JProperty("sbdm", "设备代码"),
+                                                 new JProperty("graphicName", "xlr_panel_test")
+                                                 )
+                                    );
+            //添加用户信息
+            string urlstr = httpurl_addGraphicPosition;
+            HttpRequestEx r = new HttpRequestEx();
+            string ret= r.HttpRequest_Call(urlstr, json_ary.ToString());
+            HttpWeb_SavePanelInfo(urlstr, json_ary);
         }
     }
 }

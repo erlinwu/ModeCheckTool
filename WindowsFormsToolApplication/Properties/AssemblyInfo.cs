@@ -36,4 +36,4 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 //log for net
-[assembly: log4net.Config.XmlConfigurator()]
+[assembly: log4net.Config.XmlConfigurator(Watch = true)]

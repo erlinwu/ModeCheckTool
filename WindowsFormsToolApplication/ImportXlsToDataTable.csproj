@@ -121,6 +121,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseCls\DBLib.cs" />
+    <Compile Include="BaseCls\FileHelper.cs" />
+    <Compile Include="BaseCls\HttpRequestHelper.cs" />
+    <Compile Include="BaseCls\Log4NetHelper.cs" />
     <Compile Include="BaseCls\npoi_ext.cs" />
     <Compile Include="BaseCls\SQLiteBulkInsert.cs" />
     <Compile Include="BaseCls\SqliteHelper.cs" />
@@ -256,7 +259,6 @@
     <Content Include="bin\Debug\System.Data.SQLite.xml" />
     <Content Include="bin\Debug\x64\SQLite.Interop.dll" />
     <Content Include="bin\Debug\x86\SQLite.Interop.dll" />
-    <Content Include="configfile.xml" />
     <Content Include="DB2DLL\db2app.dll" />
     <Content Include="DB2DLL\db2osse.dll" />
     <Content Include="DB2DLL\db2trcapi.dll" />
