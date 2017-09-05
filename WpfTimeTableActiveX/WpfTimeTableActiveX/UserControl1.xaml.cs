@@ -10,26 +10,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
-
-// To access MetroWindow, add the following reference
-using MahApps.Metro.Controls;
 
 namespace WpfTimeTableActiveX
 {
     /// <summary>
-    /// Window1.xaml 的交互逻辑
+    /// UserControl1.xaml 的交互逻辑
     /// </summary>
-    public partial class Window1 //: MetroWindow
+    public partial class UserControl1 : UserControl
     {
-        public Window1()
+        public UserControl1()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            throw new NotImplementedException();
         }
     }
 }

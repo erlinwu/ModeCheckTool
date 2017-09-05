@@ -75,9 +75,9 @@
             this.richTextBoxMain.BackColor = System.Drawing.SystemColors.WindowText;
             this.richTextBoxMain.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.richTextBoxMain.ForeColor = System.Drawing.SystemColors.Window;
-            this.richTextBoxMain.Location = new System.Drawing.Point(238, 10);
+            this.richTextBoxMain.Location = new System.Drawing.Point(237, 10);
             this.richTextBoxMain.Name = "richTextBoxMain";
-            this.richTextBoxMain.Size = new System.Drawing.Size(734, 439);
+            this.richTextBoxMain.Size = new System.Drawing.Size(733, 439);
             this.richTextBoxMain.TabIndex = 2;
             this.richTextBoxMain.Text = "";
             // 
@@ -87,10 +87,10 @@
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Font = new System.Drawing.Font("微软雅黑", 10.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.tabControl1.Location = new System.Drawing.Point(10, 10);
+            this.tabControl1.Location = new System.Drawing.Point(9, 10);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(223, 439);
+            this.tabControl1.Size = new System.Drawing.Size(223, 440);
             this.tabControl1.TabIndex = 3;
             this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
@@ -107,17 +107,17 @@
             this.tabPage1.Controls.Add(this.btnImport);
             this.tabPage1.Location = new System.Drawing.Point(4, 29);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(215, 406);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Size = new System.Drawing.Size(215, 407);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "数据导入";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(101, 295);
+            this.button3.Location = new System.Drawing.Point(101, 296);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(98, 33);
+            this.button3.Size = new System.Drawing.Size(99, 33);
             this.button3.TabIndex = 15;
             this.button3.Text = "清空清单配置";
             this.button3.UseVisualStyleBackColor = true;
@@ -127,7 +127,7 @@
             // 
             this.button2.Location = new System.Drawing.Point(101, 184);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(98, 30);
+            this.button2.Size = new System.Drawing.Size(99, 30);
             this.button2.TabIndex = 14;
             this.button2.Text = "清空类配置";
             this.button2.UseVisualStyleBackColor = true;
@@ -135,9 +135,9 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(101, 77);
+            this.button1.Location = new System.Drawing.Point(101, 76);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(98, 33);
+            this.button1.Size = new System.Drawing.Size(99, 33);
             this.button1.TabIndex = 13;
             this.button1.Text = "清空模式配置";
             this.button1.UseVisualStyleBackColor = true;
@@ -146,7 +146,7 @@
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(4, 242);
+            this.label8.Location = new System.Drawing.Point(3, 242);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(93, 20);
             this.label8.TabIndex = 12;
@@ -156,7 +156,7 @@
             // 
             this.buttonImpDevList.Location = new System.Drawing.Point(101, 240);
             this.buttonImpDevList.Name = "buttonImpDevList";
-            this.buttonImpDevList.Size = new System.Drawing.Size(98, 37);
+            this.buttonImpDevList.Size = new System.Drawing.Size(99, 38);
             this.buttonImpDevList.TabIndex = 11;
             this.buttonImpDevList.Text = "设备清单";
             this.buttonImpDevList.UseVisualStyleBackColor = true;
@@ -166,7 +166,7 @@
             // 
             this.buttonImpMode.Location = new System.Drawing.Point(101, 26);
             this.buttonImpMode.Name = "buttonImpMode";
-            this.buttonImpMode.Size = new System.Drawing.Size(98, 35);
+            this.buttonImpMode.Size = new System.Drawing.Size(99, 34);
             this.buttonImpMode.TabIndex = 10;
             this.buttonImpMode.Text = "模式信息";
             this.buttonImpMode.UseVisualStyleBackColor = true;
@@ -175,7 +175,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(4, 138);
+            this.label1.Location = new System.Drawing.Point(3, 138);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(93, 20);
             this.label1.TabIndex = 9;
@@ -184,7 +184,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(4, 32);
+            this.label7.Location = new System.Drawing.Point(3, 32);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(79, 20);
             this.label7.TabIndex = 8;
@@ -194,7 +194,7 @@
             // 
             this.btnImport.Location = new System.Drawing.Point(101, 132);
             this.btnImport.Name = "btnImport";
-            this.btnImport.Size = new System.Drawing.Size(98, 35);
+            this.btnImport.Size = new System.Drawing.Size(99, 34);
             this.btnImport.TabIndex = 6;
             this.btnImport.Text = "设备类表";
             this.btnImport.UseVisualStyleBackColor = true;
@@ -214,15 +214,15 @@
             this.tabPage2.Controls.Add(this.buttonCreateModePanel);
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(215, 406);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage2.Size = new System.Drawing.Size(215, 407);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "工具栏";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // button_createpanel
             // 
-            this.button_createpanel.Location = new System.Drawing.Point(112, 120);
+            this.button_createpanel.Location = new System.Drawing.Point(111, 120);
             this.button_createpanel.Name = "button_createpanel";
             this.button_createpanel.Size = new System.Drawing.Size(91, 36);
             this.button_createpanel.TabIndex = 18;
@@ -233,7 +233,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(4, 120);
+            this.label6.Location = new System.Drawing.Point(3, 120);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(65, 20);
             this.label6.TabIndex = 17;
@@ -242,7 +242,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(4, 254);
+            this.label10.Location = new System.Drawing.Point(3, 254);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(65, 20);
             this.label10.TabIndex = 16;
@@ -253,17 +253,17 @@
             this.comboBox_syslist.FormattingEnabled = true;
             this.comboBox_syslist.Items.AddRange(new object[] {
             "空"});
-            this.comboBox_syslist.Location = new System.Drawing.Point(97, 251);
-            this.comboBox_syslist.Margin = new System.Windows.Forms.Padding(2);
+            this.comboBox_syslist.Location = new System.Drawing.Point(97, 250);
+            this.comboBox_syslist.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.comboBox_syslist.Name = "comboBox_syslist";
             this.comboBox_syslist.Size = new System.Drawing.Size(113, 28);
             this.comboBox_syslist.TabIndex = 15;
             // 
             // buttonCheckModeTable
             // 
-            this.buttonCheckModeTable.Location = new System.Drawing.Point(112, 74);
+            this.buttonCheckModeTable.Location = new System.Drawing.Point(111, 74);
             this.buttonCheckModeTable.Name = "buttonCheckModeTable";
-            this.buttonCheckModeTable.Size = new System.Drawing.Size(91, 35);
+            this.buttonCheckModeTable.Size = new System.Drawing.Size(91, 34);
             this.buttonCheckModeTable.TabIndex = 14;
             this.buttonCheckModeTable.Text = "校对模式表";
             this.buttonCheckModeTable.UseVisualStyleBackColor = true;
@@ -272,7 +272,7 @@
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(4, 75);
+            this.label9.Location = new System.Drawing.Point(3, 75);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(79, 20);
             this.label9.TabIndex = 13;
@@ -284,7 +284,7 @@
             this.comboBox_stationlist.Items.AddRange(new object[] {
             "空"});
             this.comboBox_stationlist.Location = new System.Drawing.Point(97, 206);
-            this.comboBox_stationlist.Margin = new System.Windows.Forms.Padding(2);
+            this.comboBox_stationlist.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.comboBox_stationlist.Name = "comboBox_stationlist";
             this.comboBox_stationlist.Size = new System.Drawing.Size(113, 28);
             this.comboBox_stationlist.TabIndex = 12;
@@ -293,7 +293,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(4, 207);
+            this.label4.Location = new System.Drawing.Point(3, 207);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(51, 20);
             this.label4.TabIndex = 11;
@@ -302,7 +302,7 @@
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(4, 29);
+            this.label5.Location = new System.Drawing.Point(3, 28);
             this.label5.Name = "label5";
             this.label5.Size = new System.Drawing.Size(93, 20);
             this.label5.TabIndex = 9;
@@ -310,9 +310,9 @@
             // 
             // buttonCreateModePanel
             // 
-            this.buttonCreateModePanel.Location = new System.Drawing.Point(112, 26);
+            this.buttonCreateModePanel.Location = new System.Drawing.Point(111, 26);
             this.buttonCreateModePanel.Name = "buttonCreateModePanel";
-            this.buttonCreateModePanel.Size = new System.Drawing.Size(91, 37);
+            this.buttonCreateModePanel.Size = new System.Drawing.Size(91, 38);
             this.buttonCreateModePanel.TabIndex = 8;
             this.buttonCreateModePanel.Text = "生成画面";
             this.buttonCreateModePanel.UseVisualStyleBackColor = true;
@@ -327,18 +327,18 @@
             this.tabPage3.Controls.Add(this.label2);
             this.tabPage3.Controls.Add(this.buttonScreenReflash);
             this.tabPage3.Location = new System.Drawing.Point(4, 29);
-            this.tabPage3.Margin = new System.Windows.Forms.Padding(2);
+            this.tabPage3.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.tabPage3.Name = "tabPage3";
-            this.tabPage3.Size = new System.Drawing.Size(215, 406);
+            this.tabPage3.Size = new System.Drawing.Size(215, 407);
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "其他";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(77, 199);
+            this.button5.Location = new System.Drawing.Point(77, 200);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(96, 29);
+            this.button5.Size = new System.Drawing.Size(96, 28);
             this.button5.TabIndex = 13;
             this.button5.Text = "buttonhttptest";
             this.button5.UseVisualStyleBackColor = true;
@@ -347,9 +347,9 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(70, 234);
+            this.button4.Location = new System.Drawing.Point(69, 234);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(103, 29);
+            this.button4.Size = new System.Drawing.Size(103, 28);
             this.button4.TabIndex = 12;
             this.button4.Text = "button4";
             this.button4.UseVisualStyleBackColor = true;
@@ -359,7 +359,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(3, 103);
+            this.label3.Location = new System.Drawing.Point(3, 104);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(65, 20);
             this.label3.TabIndex = 11;
@@ -367,9 +367,9 @@
             // 
             // buttonScreenClear
             // 
-            this.buttonScreenClear.Location = new System.Drawing.Point(85, 97);
+            this.buttonScreenClear.Location = new System.Drawing.Point(85, 98);
             this.buttonScreenClear.Name = "buttonScreenClear";
-            this.buttonScreenClear.Size = new System.Drawing.Size(107, 41);
+            this.buttonScreenClear.Size = new System.Drawing.Size(107, 40);
             this.buttonScreenClear.TabIndex = 10;
             this.buttonScreenClear.Text = "清空显示";
             this.buttonScreenClear.UseVisualStyleBackColor = true;
@@ -378,7 +378,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(4, 34);
+            this.label2.Location = new System.Drawing.Point(3, 34);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(65, 20);
             this.label2.TabIndex = 9;
@@ -386,9 +386,9 @@
             // 
             // buttonScreenReflash
             // 
-            this.buttonScreenReflash.Location = new System.Drawing.Point(86, 34);
+            this.buttonScreenReflash.Location = new System.Drawing.Point(87, 34);
             this.buttonScreenReflash.Name = "buttonScreenReflash";
-            this.buttonScreenReflash.Size = new System.Drawing.Size(106, 41);
+            this.buttonScreenReflash.Size = new System.Drawing.Size(105, 40);
             this.buttonScreenReflash.TabIndex = 8;
             this.buttonScreenReflash.Text = "停止刷新";
             this.buttonScreenReflash.UseVisualStyleBackColor = true;
@@ -398,13 +398,14 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(984, 461);
+            this.ClientSize = new System.Drawing.Size(984, 460);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.richTextBoxMain);
+            this.Font = new System.Drawing.Font("宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "Form1";
-            this.Text = "模式控制界面生成系统";
+            this.Text = "界面辅助生成系统";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();

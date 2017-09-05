@@ -3098,6 +3098,10 @@ namespace ImportXlsToDataTable
                     }
 
                 }
+                else
+                {
+                    ShowInfo("提示：路径"+PANEL_INPUTFILEPATH+"下没有任何xml画面文件。");
+                }
             }
             catch (Exception ex)
             {
@@ -3407,10 +3411,18 @@ namespace ImportXlsToDataTable
                     //HttpWeb_SavePanelInfo(urlstr, json_ary);
                     ShowInfo("画面信息保存操作，调用服务（" + urlstr + "）返回：" + ret);
                 }
-                
 
-                //保存xml文件 
-                sPath =sPath.Replace(PANEL_INPUTFILEPATH, PANEL_OUTPUTFILEPATH);//可能有嵌套文件夹的情况产生
+
+                //保存xml文件
+                sPath = sPath.Replace(PANEL_INPUTFILEPATH, PANEL_OUTPUTFILEPATH);//可能有嵌套文件夹的情况产生
+                string sPath_t = Path.GetDirectoryName(sPath);
+                if (!Directory.Exists(sPath_t))
+                {
+                    //
+                    Directory.CreateDirectory(sPath_t);
+
+                }
+                
                 xdPanelExample.Save(sPath);//
                 
             }
