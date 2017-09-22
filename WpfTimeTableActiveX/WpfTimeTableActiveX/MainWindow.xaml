@@ -1,15 +1,220 @@
-﻿<Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfTimeTableActiveX"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" 
-        xmlns:xcdg="http://schemas.xceed.com/wpf/xaml/datagrid" 
-        xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock" 
-        xmlns:Custom="http://metro.mahapps.com/winfx/xaml/controls" 
-        x:Class="WpfTimeTableActiveX.MainWindow"
-        mc:Ignorable="d"
-        Title="" Height="600" Width="1000" WindowStyle="None" AllowsTransparency="True" Initialized="Window_Initialized">
-    <Custom:Tile x:Name="tile" Content="Tile111" HorizontalAlignment="Left" Margin="273,116,0,0" VerticalAlignment="Top"/>
-</Window>
+﻿<controls:MetroWindow x:Class="WpfTools.MainWindow"
+                      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                      xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+                      xmlns:iconPacks="clr-namespace:MahApps.Metro.IconPacks;assembly=MahApps.Metro.IconPacks"
+                      xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+                      xmlns:converters="http://metro.mahapps.com/winfx/xaml/shared"
+                      Title="画面生成工具"
+                      TitleCaps="True"
+                      Height="600"
+                      Width="1200"
+                      TitlebarHeight="50"
+                      
+     
+                      BorderThickness="0" 
+                      GlowBrush="Black"
+                      ResizeMode="CanResizeWithGrip"
+
+                      WindowTransitionsEnabled="False"
+                      WindowStartupLocation="CenterScreen" FontSize="14">
+    <!--自定义的图标控件等-->
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type controls:HamburgerMenuItem}">
+                <Grid Height="48">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Grid.Column="0"
+                                Content="{Binding Tag}"
+                                Focusable="True"
+                                IsTabStop="False" />
+                    <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Text="{Binding Label}" />
+
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="HamburgerMenuImageItem" DataType="{x:Type controls:HamburgerMenuGlyphItem}">
+                <Grid Height="48">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="48" />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <ContentControl Grid.Column="0"
+                                Content="{Binding Tag}"
+                                Focusable="True"
+                                IsTabStop="False" />
+                    <Image Margin="12"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Source="{Binding Glyph}"
+                       Stretch="UniformToFill" />
+                    <TextBlock Grid.Column="1"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           Text="{Binding Label}" />
+                </Grid>
+            </DataTemplate>
+
+            <Thickness x:Key="ColumnMargin">10 5 10 5</Thickness>
+            <Thickness x:Key="ControlMargin">0 5 0 0</Thickness>
+        </ResourceDictionary>
+        
+    </Window.Resources>
+
+
+
+    <!--窗体title图标-->
+    <controls:MetroWindow.IconTemplate>
+        <DataTemplate>
+            <Grid Width="{TemplateBinding Width}"
+                 Height="{TemplateBinding Height}"
+                 Margin="4"
+                 
+                 Background="Transparent"
+                 RenderOptions.EdgeMode="Aliased"
+                 RenderOptions.BitmapScalingMode="HighQuality">
+                <Rectangle>
+                    <Rectangle.Fill>
+                        <VisualBrush Visual="{StaticResource appbar_home}"/>
+                    </Rectangle.Fill>
+                </Rectangle>
+            </Grid>
+        </DataTemplate>
+    </controls:MetroWindow.IconTemplate>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="0"
+                       Margin="0,0,0,0">
+            
+            <!--菜单栏-->
+            <controls:HamburgerMenu Content="" 
+                            HorizontalAlignment="Left" 
+                            VerticalAlignment="Top" 
+                            Height="571" 
+                            Margin="0,0,0,0" 
+                            Width="320"
+                            x:Name="HamburgerMenuControl"
+                            Grid.Row="1"
+                            HamburgerWidth="48"
+                            IsPaneOpen="{Binding IsHamburgerMenuPaneOpen}"
+                            ItemClick="HamburgerMenu_OnItemClick"
+                            ItemTemplate="{StaticResource HamburgerMenuImageItem}"
+                            OptionsItemClick="HamburgerMenu_OnItemClick"
+                            OptionsItemTemplate="{StaticResource HamburgerMenuItem}"
+                            SelectedIndex="0"
+                            VerticalScrollBarOnLeftSide="False">
+                <!--  Header  -->
+                <controls:HamburgerMenu.HamburgerMenuHeaderTemplate>
+                    <DataTemplate>
+                        <TextBlock HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontSize="16"
+                               Foreground="White"
+                               Text="菜单栏" 
+                               Margin="6,0,0,0"/>
+                    </DataTemplate>
+                </controls:HamburgerMenu.HamburgerMenuHeaderTemplate>
+                <!--  Items  -->
+                <controls:HamburgerMenu.ItemsSource>
+                    <controls:HamburgerMenuItemCollection>
+                        <controls:HamburgerMenuGlyphItem  Label="配置导入" x:Name="InputItem">
+                            <controls:HamburgerMenuGlyphItem.Tag>
+                                <iconPacks:PackIconMaterial Width="22"
+                                                    Height="22"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" Kind="BriefcaseUpload" />
+                            </controls:HamburgerMenuGlyphItem.Tag>
+                        </controls:HamburgerMenuGlyphItem>
+                        <controls:HamburgerMenuGlyphItem  Label="画面生成" x:Name="ToolItem">
+                            <controls:HamburgerMenuGlyphItem.Tag>
+                                <iconPacks:PackIconMaterial Width="22"
+                                                    Height="22"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" Kind="BookOpenPageVariant" />
+                            </controls:HamburgerMenuGlyphItem.Tag>
+                        </controls:HamburgerMenuGlyphItem>
+                        <controls:HamburgerMenuGlyphItem  Label="其他" x:Name="OtherItem">
+                            <controls:HamburgerMenuGlyphItem.Tag>
+                                <iconPacks:PackIconMaterial Width="22"
+                                                    Height="22"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center" Kind="ArrangeSendToBack" />
+                            </controls:HamburgerMenuGlyphItem.Tag>
+                        </controls:HamburgerMenuGlyphItem>
+                    </controls:HamburgerMenuItemCollection>
+                </controls:HamburgerMenu.ItemsSource>
+
+                <!--  Content  菜单延伸内容区域 -->
+                <controls:HamburgerMenu.ContentTemplate>
+                    <DataTemplate>
+                        <Grid x:Name="ContentGrid">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="48" />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="#7A7A7A">
+                                <TextBlock x:Name="Header"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="18"
+                                       Foreground="White"
+                                       Text="{Binding Label}" />
+                            </Border>
+                            <controls:TransitioningContentControl Grid.Row="1"
+                                                              Content="{Binding Glyph}"
+                                                              RestartTransitionOnContentChange="True"
+                                                              Transition="Default">
+                                <controls:TransitioningContentControl.ContentTemplate>
+                                    <DataTemplate>
+                                        <Button Width="100"
+                                                Margin="{StaticResource ControlMargin}"
+                                                Content="Enabled"
+                                                Style="{DynamicResource AccentedSquareButtonStyle}" />
+                                    </DataTemplate>
+                                </controls:TransitioningContentControl.ContentTemplate>
+                            </controls:TransitioningContentControl>
+                        </Grid>
+                    </DataTemplate>
+                </controls:HamburgerMenu.ContentTemplate>
+
+
+            </controls:HamburgerMenu>
+        
+        </StackPanel>
+        
+        <StackPanel Grid.Row="0"
+                        Grid.RowSpan="2"
+                        Grid.Column="1"
+                        Margin="{StaticResource ColumnMargin}">
+            <RichTextBox x:Name="richTextBox"  Height="520" VerticalAlignment="Top" Width="850" Margin="320,15,0,0"  IsReadOnly="True" IsDocumentEnabled="True">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text=""/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </StackPanel>
+
+
+    </Grid>
+
+</controls:MetroWindow>

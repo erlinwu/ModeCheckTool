@@ -12,24 +12,21 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-// To access MetroWindow, add the following reference
+using System.Windows.Navigation;
+
+
 using MahApps.Metro.Controls;
 
-namespace WpfTimeTableActiveX
+namespace WpfTools
 {
     /// <summary>
     /// Window1.xaml 的交互逻辑
     /// </summary>
-    public partial class Window1 //: MetroWindow
+    public partial class Window1 : Window
     {
         public Window1()
         {
             InitializeComponent();
-        }
-
-        private void InitializeComponent()
-        {
-            throw new NotImplementedException();
         }
     }
 }

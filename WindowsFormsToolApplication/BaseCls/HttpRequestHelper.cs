@@ -94,12 +94,12 @@ namespace HttpRequestHelper
                 string send_jsonstr = json_ary;
                 HttpWebRequest request = WebRequest.Create(urlstr) as HttpWebRequest;//
                 request.Timeout = 5111;//超时
-                request.Method = "post";
+                request.Method = "post";//
                 request.KeepAlive = true;
                 request.AllowAutoRedirect = false;
-                request.ContentType = "application/x-www-form-urlencoded";
+                request.ContentType = "application/x-www-form-urlencoded;charset=utf-8";
                 //
-                byte[] postdatabtyes = Encoding.UTF8.GetBytes("posList=" + send_jsonstr);
+                byte[] postdatabtyes = Encoding.UTF8.GetBytes(send_jsonstr);
                 request.ContentLength = postdatabtyes.Length;
                 Stream requeststream = request.GetRequestStream();
                 requeststream.Write(postdatabtyes, 0, postdatabtyes.Length);

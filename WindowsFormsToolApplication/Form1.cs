@@ -1352,7 +1352,7 @@ namespace ImportXlsToDataTable
                                 break;
                             case 2://设备列表
                                 //站和系统编号 sheet里面包含 不另外获取
-
+                                SYSID = filename.Split('_')[1];//ZKR_EMCS_DeviceList.xlsx
                                 extNum = 0;//站和系统编号 sheet里面包含
                                 break;
                            
@@ -1461,6 +1461,7 @@ namespace ImportXlsToDataTable
                                                     }
                                                     else//设备清单里面 第二行是序号，字段是空的，但是后面的列还是要的。所以不跳出，continue。
                                                     {
+
                                                         continue;
                                                     }
                                                 }
@@ -1521,16 +1522,26 @@ namespace ImportXlsToDataTable
                                             //extNum为设备类的特殊处理 站点编号在文件头上，类别ID在sheet的NAME上。
                                             for (int j =0+ extNum; j < cellCount + extNum; j++)
                                             {
-                                                //设备清单的特殊处理 第二列 序号里面的数据不用
-                                                if (typeOfExcel == 2 && j - extNum == 1) {
-                                                    i_ts = i_ts + 1;
-                                                    continue;
+                                                //设备清单的特殊处理 
+                                                //1.第二列 序号里面的数据不用
+                                                //2.beizhu3这一列的数据，用系统名称替换
+                                                if (typeOfExcel == 2  ) {
+                                                    if(j - extNum == 1)
+                                                    {
+                                                        i_ts = i_ts + 1;
+                                                        continue;
+                                                    }
+                                                    if (j - extNum == 18)
+                                                    {
+                                                        dataRow[j - i_ts] = SYSID;
+                                                        continue;
+                                                    }  
                                                 }
-                                                
+
                                                 //有些cell有公式
                                                 cell = row.GetCell(j - extNum);//cell数据获取
                                                 //有些cell前后有多余的空格
-                                                dataRow[j- i_ts] = npoi_celldeal(cell).ToString().Trim();
+                                                dataRow[j- i_ts] =  npoi_celldeal(cell).ToString().Trim().ToUpper();
                                                 
                                             }
                                         }
@@ -3085,7 +3096,7 @@ namespace ImportXlsToDataTable
                 {
                     //获取taglist全部信息 不进行重复抽取数据的操作
                     JArray ret_jsonobj = new JArray();
-                    string sqlstr = "select DEVINDEX,SBDM,beizhu3 as SYSID,beizhu2 as CLASSID from devicelist where stationid='" + stationName + "' and devindex<>''  and devindex<>'' and sysid<>'' and classid<>'';";
+                    string sqlstr = "select DEVINDEX,SBDM,beizhu3 as SYSID,DEVID as CLASSID from devicelist where stationid='" + stationName + "' and devindex<>''  and devindex<>'' and sysid<>'' and classid<>'';";
                     ret_jsonobj = get_jsonobj_bysqlstr(sqlstr);
                     if (ret_jsonobj == null)
                     {
@@ -3196,10 +3207,13 @@ namespace ImportXlsToDataTable
 
                 JArray json_ary = new JArray();//上传平台的画面信息json队列
 
-                //读取模板文件
+                //读取xml文件
                 XmlDocument xdPanelExample = new XmlDocument();  //实例化一个XmlDocument
                 xdPanelExample.Load(sPath);
-                
+                //临时xml文件
+                XmlDocument xdPanel_t = new XmlDocument();
+                xdPanel_t.Load(sPath);
+
                 //shapes节点
                 XmlNode ShapesNode = xdPanelExample.SelectSingleNode("//panel/shapes");
 
@@ -3223,6 +3237,9 @@ namespace ImportXlsToDataTable
                 string classid = "";//图元的路径
                 string sysid = "";//设备所属系统id
                 string Geometry = "1 0 0 1 0 0";//相对位置
+                //最大最小x y
+                int max_x = 1900;
+                int max_y = 855;
 
                 //在上次画面生成时未出现的设备代码
                 List<string> sSBDM_new = new List<string>();
@@ -3230,6 +3247,16 @@ namespace ImportXlsToDataTable
                 List<string> sSBDM_nosetting = new List<string>();
                 //获取所有 PRIMITIVE_TEXT
                 XmlNodeList text_replace_list = xdPanelExample.SelectNodes("/panel/shapes/shape[@shapeType='PRIMITIVE_TEXT']");
+
+                //遍历获取能够对应点表的图元
+                XmlNodeList refer_old_t = xdPanelExample.SelectNodes("/panel/shapes/reference");
+                //删除所有的reference图元
+                foreach (XmlNode refer_t in refer_old_t)
+                {
+
+                    ShapesNode.RemoveChild(refer_t);
+                }
+
                 foreach (XmlNode text_label in text_replace_list)
                 {
                     
@@ -3237,8 +3264,10 @@ namespace ImportXlsToDataTable
                     XmlNode xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Text']/prop[@name='zh_CN.utf8']");
                     if (xmlnode_t != null)
                     {
-                        //设备编号获取
-                        string device_code = xmlnode_t.InnerText;
+
+                        
+                        //设备编号获取 图纸有可能有大小写混合的情况
+                        string device_code = xmlnode_t.InnerText.ToUpper();
                         //根据设备代码 获取对应的 tagname（点表名） 和 filename（设备类型）
                         tagname = "";
                         classid = "";
@@ -3259,23 +3288,75 @@ namespace ImportXlsToDataTable
                             sSBDM_nosetting.Add(device_code);
                             continue;//未匹配到结果
                         }
+                        //Location和Geometry先获取界面上已经存在的图元 在临时对象上完成
+                        XmlNode refrence_t = xdPanel_t.SelectSingleNode("/panel/shapes/reference/properties/prop[@name='dollarParameters']/prop[@name='dollarParameter'][prop='"+tagname+"']/prop");
+                        XmlNode parentnode_t;//已经存在的图元属性元素节点
+                        int i_exsitRefer = 0;
+                        //Location获取
+                        if (refrence_t != null)
+                        {
+                            //已经完成的图元的位置
+                            parentnode_t = refrence_t.ParentNode.ParentNode.ParentNode;
+                            xmlnode_t = parentnode_t.SelectSingleNode("./prop[@name='Location']");
+                            i_exsitRefer = 1;
 
-                        //text位置获取
-                        xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Location']");
+                        }
+                        else
+                        {
+                            //text位置获取
+                            xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Location']");
+                          
+                        }
+
                         string[] location_arr;
                         string x = "0";
                         string y = "0";
 
                         if (xmlnode_t != null)
-                        { 
-                             location_arr = xmlnode_t.InnerText.Split(' ');
-                             x = location_arr[0].ToString();
-                             y = location_arr[1].ToString(); 
+                        {
+                            location_arr = xmlnode_t.InnerText.Split(' ');
+                            x = location_arr[0].ToString();
+                            y = location_arr[1].ToString();
                         }
+
+                        //x,y的偏移范围界定 画面尺寸大部分1920*875
+                        if (Convert.ToDouble(x) < 0)
+                        {
+                            x = "0";
+                        }
+                        else if (Convert.ToDouble(x) > max_x)
+                        {
+                            x = max_x.ToString();
+                        }
+                        if (Convert.ToDouble(y) < 0)
+                        {
+                            y = "0";
+                        }
+                        else if (Convert.ToDouble(y) > max_y)
+                        {
+                            y = max_y.ToString();
+                        }
+
                         //Geometry获取
-                        xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Geometry']");
-                        if(xmlnode_t!=null) Geometry = xmlnode_t.InnerText;
-                        //上传panel信息
+                        if (refrence_t != null)
+                        {
+                            //已经完成的图元的位置
+                            parentnode_t = refrence_t.ParentNode.ParentNode.ParentNode;
+                            xmlnode_t = parentnode_t.SelectSingleNode("./prop[@name='Geometry']");
+                            i_exsitRefer = 1;
+
+                        }
+                        else
+                        {
+                            //
+                            xmlnode_t = text_label.SelectSingleNode("./properties/prop[@name='Geometry']");
+                            
+                        }
+                        //部分text没有Geometry 需要初始化初始值一次
+                        Geometry = "1 0 0 1 0 0";
+                        if (xmlnode_t != null) Geometry = xmlnode_t.InnerText;
+
+                        //上传http接口的panel信息
                         json_ary.Add(new JObject(new JProperty("devIndex", tagname),
                                                  new JProperty("position", x + " " + y),
                                                  new JProperty("positionCode", Geometry),
@@ -3285,7 +3366,7 @@ namespace ImportXlsToDataTable
                                     );
 
                         //画面信息对比 根据sbdm进行对比：位置/有无
-                        if (json_panelinfo_get != null)
+                        if (json_panelinfo_get != null)//接口获取画面的信息不为空
                         {
                             int sFlag = 0;
                             string sDate_t = "";
@@ -3303,18 +3384,20 @@ namespace ImportXlsToDataTable
                                     {
                                         ((JObject)json_panelinfo_get[i])["pid"] = "exist_positiondiff";
                                     }
-                                    sFlag = 1;
+                                    sFlag = 1;//匹配到记录 不是新增
 
 
                                 }
     
                             }
-                            if (sFlag == 1)
+                            if (sFlag == 0)//未匹配到的设备代码
                             {
-                                sSBDM_new.Add(device_code);
+                                sSBDM_new.Add(device_code);//新增设备
                             }
                             
                         }
+
+                   
 
                         //根据设备编号获取对应图元信息
                         //1.referenceId / Name  /TabOrder 编号都要唯一
@@ -3324,7 +3407,7 @@ namespace ImportXlsToDataTable
 
                         string xpath_t = "/panel/shapes/reference[@referenceId='" + referenceId.ToString() + "']/properties/";
                         XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='FileName']", "objects/"+ sysid + "/"+ classid + ".xml");//objects/EMCS/DDT.xml
-                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='Location']", (Convert.ToDouble(x) + 10).ToString() + " "+ (Convert.ToDouble(y) + 10).ToString());
+                        XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='Location']", (Convert.ToDouble(x) + 0).ToString() + " "+ (Convert.ToDouble(y) + 0).ToString());
                         XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='Geometry']", Geometry);//
                         XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='TabOrder']", taborder.ToString());
                         //
@@ -3351,9 +3434,9 @@ namespace ImportXlsToDataTable
                 {
                     string sMsg = "";
                     string sDate_t = "";
-                    List<string> sSBDM_t1 = new List<string>();
-                    List<string> sSBDM_t2 = new List<string>();
-                    List<string> sSBDM_t3 = new List<string>();
+                    List<string> sSBDM_t1 = new List<string>();//位置发生变化
+                    List<string> sSBDM_t2 = new List<string>();//信息一致
+                    List<string> sSBDM_t3 = new List<string>();//较上次减少设备
                     for (int i = 0; i < json_panelinfo_get.Count; i++)
                     {                                                                     
                         if ((string)json_panelinfo_get[i].SelectToken("pid")== "exist_positiondiff")//记录匹配情况下，对比位置
@@ -3363,12 +3446,12 @@ namespace ImportXlsToDataTable
                         }
                         else if((string)json_panelinfo_get[i].SelectToken("pid") == "exist_ok")
                         {
-                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");
                             sSBDM_t2.Add((string)json_panelinfo_get[i].SelectToken("sbdm"));
                         }
                         else
                         {
-                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");//获取最近一次画面更新时间
+                            sDate_t = (string)json_panelinfo_get[i].SelectToken("updateTime");
                             sSBDM_t3.Add((string)json_panelinfo_get[i].SelectToken("sbdm"));
                         }
 
@@ -3409,9 +3492,8 @@ namespace ImportXlsToDataTable
                     //ret = httpobj.HttpRequest_Call(urlstr, json_ary.ToString());//同步方式调用
                     httpobj.HttpRequest_AsyncCall(urlstr, "posList=" + json_ary.ToString());//异步方式调用
                     //HttpWeb_SavePanelInfo(urlstr, json_ary);
-                    ShowInfo("画面信息保存操作，调用服务（" + urlstr + "）返回：" + ret);
+                    ShowInfo("画面"+ output_filename + "信息保存操作，调用服务（" + urlstr + "）返回：" + ret);
                 }
-
 
                 //保存xml文件
                 sPath = sPath.Replace(PANEL_INPUTFILEPATH, PANEL_OUTPUTFILEPATH);//可能有嵌套文件夹的情况产生

@@ -53,6 +53,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Gizmo.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.0.0\lib\net40\EntityFramework.dll</HintPath>
@@ -264,6 +267,7 @@
     <Content Include="DB2DLL\db2trcapi.dll" />
     <Content Include="DB2DLL\IBM.Data.DB2.dll" />
     <Content Include="DB2DLL\IBMOSauthclient.dll" />
+    <Content Include="Gizmo.ico" />
     <Content Include="NPOINet40\ICSharpCode.SharpZipLib.dll" />
     <Content Include="NPOINet40\NPOI.dll" />
     <Content Include="NPOINet40\NPOI.OOXML.dll" />
