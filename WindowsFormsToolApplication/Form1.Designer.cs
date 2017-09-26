@@ -59,6 +59,7 @@
             this.buttonScreenClear = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.buttonScreenReflash = new System.Windows.Forms.Button();
+            this.checkBox_panelsize = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -107,7 +108,7 @@
             this.tabPage1.Controls.Add(this.btnImport);
             this.tabPage1.Location = new System.Drawing.Point(4, 29);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(215, 407);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "数据导入";
@@ -202,6 +203,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.checkBox_panelsize);
             this.tabPage2.Controls.Add(this.button_createpanel);
             this.tabPage2.Controls.Add(this.label6);
             this.tabPage2.Controls.Add(this.label10);
@@ -214,7 +216,7 @@
             this.tabPage2.Controls.Add(this.buttonCreateModePanel);
             this.tabPage2.Location = new System.Drawing.Point(4, 29);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3, 3, 3, 3);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(215, 407);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "工具栏";
@@ -394,6 +396,18 @@
             this.buttonScreenReflash.UseVisualStyleBackColor = true;
             this.buttonScreenReflash.Click += new System.EventHandler(this.buttonScreenReflash_Click);
             // 
+            // checkBox_panelsize
+            // 
+            this.checkBox_panelsize.AutoSize = true;
+            this.checkBox_panelsize.Checked = true;
+            this.checkBox_panelsize.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_panelsize.Location = new System.Drawing.Point(97, 307);
+            this.checkBox_panelsize.Name = "checkBox_panelsize";
+            this.checkBox_panelsize.Size = new System.Drawing.Size(112, 24);
+            this.checkBox_panelsize.TabIndex = 20;
+            this.checkBox_panelsize.Text = "画面尺寸判断";
+            this.checkBox_panelsize.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -452,6 +466,7 @@
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.CheckBox checkBox_panelsize;
     }
 }
 

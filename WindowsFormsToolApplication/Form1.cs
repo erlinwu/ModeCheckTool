@@ -3267,7 +3267,9 @@ namespace ImportXlsToDataTable
 
                         
                         //设备编号获取 图纸有可能有大小写混合的情况
-                        string device_code = xmlnode_t.InnerText.ToUpper();
+                        //20170926 设备代码panel上面可能有空格，判断的时候需要剔除空格
+                        string device_code = xmlnode_t.InnerText.Trim().ToUpper();
+                        
                         //根据设备代码 获取对应的 tagname（点表名） 和 filename（设备类型）
                         tagname = "";
                         classid = "";
@@ -3320,22 +3322,29 @@ namespace ImportXlsToDataTable
                         }
 
                         //x,y的偏移范围界定 画面尺寸大部分1920*875
-                        if (Convert.ToDouble(x) < 0)
+                        //画面的尺寸判断可选，每个站有2-3副画面会非常大。
+                        if (checkBox_panelsize.Checked)
                         {
-                            x = "0";
+                            if (Convert.ToDouble(x) < 0)
+                            {
+                                x = "0";
+                            }
+                            else if (Convert.ToDouble(x) > max_x)
+                            {
+
+                                x = max_x.ToString();
+                            }
+                            if (Convert.ToDouble(y) < 0)
+                            {
+                                y = "0";
+                            }
+                            else if (Convert.ToDouble(y) > max_y)
+                            {
+                                y = max_y.ToString();
+                            }
                         }
-                        else if (Convert.ToDouble(x) > max_x)
-                        {
-                            x = max_x.ToString();
-                        }
-                        if (Convert.ToDouble(y) < 0)
-                        {
-                            y = "0";
-                        }
-                        else if (Convert.ToDouble(y) > max_y)
-                        {
-                            y = max_y.ToString();
-                        }
+                        
+
 
                         //Geometry获取
                         if (refrence_t != null)
@@ -3603,6 +3612,11 @@ namespace ImportXlsToDataTable
             HttpRequestEx r = new HttpRequestEx();
             string ret= r.HttpRequest_Call(urlstr, json_ary.ToString());
             HttpWeb_SavePanelInfo(urlstr, json_ary);
+        }
+
+        private void label11_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
