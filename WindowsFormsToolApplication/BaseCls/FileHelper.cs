@@ -12,9 +12,11 @@ namespace FileHelper
     }
     public class DirectoryAllFiles
     {
-        static List<FileInformation> FileList = new List<FileInformation>();
+
+
+        public static List<FileInformation> FileList = new List<FileInformation>();
         //遍历文件夹下所有文件（含子目录）的文件信息 递归方式
-        public static List<FileInformation> GetAllFiles(DirectoryInfo dir, string filetype)
+        public List<FileInformation> GetAllFiles(DirectoryInfo dir, string filetype)
         { 
             FileInfo[] allFile = dir.GetFiles();
             foreach (FileInfo fi in allFile)

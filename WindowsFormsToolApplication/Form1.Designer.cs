@@ -42,6 +42,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.btnImport = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.checkBox_panelsize = new System.Windows.Forms.CheckBox();
             this.button_createpanel = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
@@ -59,7 +60,7 @@
             this.buttonScreenClear = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.buttonScreenReflash = new System.Windows.Forms.Button();
-            this.checkBox_panelsize = new System.Windows.Forms.CheckBox();
+            this.checkBox_servercom = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -203,6 +204,7 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.checkBox_servercom);
             this.tabPage2.Controls.Add(this.checkBox_panelsize);
             this.tabPage2.Controls.Add(this.button_createpanel);
             this.tabPage2.Controls.Add(this.label6);
@@ -221,6 +223,19 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "工具栏";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // checkBox_panelsize
+            // 
+            this.checkBox_panelsize.AutoSize = true;
+            this.checkBox_panelsize.Checked = true;
+            this.checkBox_panelsize.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_panelsize.Location = new System.Drawing.Point(97, 307);
+            this.checkBox_panelsize.Name = "checkBox_panelsize";
+            this.checkBox_panelsize.Size = new System.Drawing.Size(112, 24);
+            this.checkBox_panelsize.TabIndex = 20;
+            this.checkBox_panelsize.Text = "画面尺寸判断";
+            this.checkBox_panelsize.UseVisualStyleBackColor = true;
+            this.checkBox_panelsize.CheckedChanged += new System.EventHandler(this.checkBox_panelsize_CheckedChanged);
             // 
             // button_createpanel
             // 
@@ -396,17 +411,17 @@
             this.buttonScreenReflash.UseVisualStyleBackColor = true;
             this.buttonScreenReflash.Click += new System.EventHandler(this.buttonScreenReflash_Click);
             // 
-            // checkBox_panelsize
+            // checkBox_servercom
             // 
-            this.checkBox_panelsize.AutoSize = true;
-            this.checkBox_panelsize.Checked = true;
-            this.checkBox_panelsize.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox_panelsize.Location = new System.Drawing.Point(97, 307);
-            this.checkBox_panelsize.Name = "checkBox_panelsize";
-            this.checkBox_panelsize.Size = new System.Drawing.Size(112, 24);
-            this.checkBox_panelsize.TabIndex = 20;
-            this.checkBox_panelsize.Text = "画面尺寸判断";
-            this.checkBox_panelsize.UseVisualStyleBackColor = true;
+            this.checkBox_servercom.AutoSize = true;
+            this.checkBox_servercom.Checked = true;
+            this.checkBox_servercom.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_servercom.Location = new System.Drawing.Point(97, 337);
+            this.checkBox_servercom.Name = "checkBox_servercom";
+            this.checkBox_servercom.Size = new System.Drawing.Size(126, 24);
+            this.checkBox_servercom.TabIndex = 21;
+            this.checkBox_servercom.Text = "服务器数据交互";
+            this.checkBox_servercom.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
@@ -467,6 +482,7 @@
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.CheckBox checkBox_panelsize;
+        private System.Windows.Forms.CheckBox checkBox_servercom;
     }
 }
 

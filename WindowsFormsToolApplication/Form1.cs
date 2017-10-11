@@ -43,6 +43,9 @@ using FileHelper;
 //http request 帮助类
 using HttpRequestHelper;
 
+//进程管理
+using System.Diagnostics;
+
 namespace ImportXlsToDataTable
 {
     public partial class Form1 : Form
@@ -116,6 +119,14 @@ namespace ImportXlsToDataTable
         {
             try
             {
+                string procName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                Process[] app = Process.GetProcessesByName(procName);
+                if (app.Length > 1)
+                {
+                    Application.Exit();
+                    return;
+                }
+
                 //读取配置文件
                 this.IniConfig();
                 //初始化数据库连接
@@ -1122,7 +1133,7 @@ namespace ImportXlsToDataTable
                     TabOrder = TabOrder + 1;
                 }
 
-                //所有引用panel的referenceId唯一
+                //所有引用panel的referenceId唯一 且不能和group的id重复
                 int referenceId = 1;
                 //shpaes下面所有的ref和shape进行TabOrder 编号
                 XmlNodeList ref_list = ShapesNode.SelectNodes("./reference");
@@ -3089,8 +3100,11 @@ namespace ImportXlsToDataTable
                 }
 
                 //从panelfile导入xml文件 循环进行处理  PANEL_OUTPUTFILEPATH
-                DirectoryInfo spath = new DirectoryInfo(PANEL_INPUTFILEPATH); 
-                List<FileInformation> xmlfilesname = FileHelper.DirectoryAllFiles.GetAllFiles(spath, ".xml");
+                DirectoryInfo spath = new DirectoryInfo(PANEL_INPUTFILEPATH);
+                DirectoryAllFiles filesearch = new DirectoryAllFiles();
+                List<FileInformation> xmlfilesname = filesearch.GetAllFiles(spath, ".xml");
+                //静态方法bug
+                //List<FileInformation> xmlfilesname =FileHelper.DirectoryAllFiles.GetAllFiles(spath, ".xml");
 
                 if (xmlfilesname != null && xmlfilesname.Count > 0)
                 {
@@ -3192,7 +3206,11 @@ namespace ImportXlsToDataTable
                 string urlstr_t= httpurl_getGraphicPositionByParams;
                 HttpRequestEx httpobjr_t = new HttpRequestEx();
                 string retr_t = string.Empty;
-                retr_t = httpobjr_t.HttpRequest_Call(urlstr_t, "graphicName=" + output_filename);//同步方式调用
+                //离线画面生成判断
+                if (checkBox_servercom.Checked)
+                {
+                    retr_t = httpobjr_t.HttpRequest_Call(urlstr_t, "graphicName=" + output_filename);//同步方式调用
+                }
                 //返回画面信息
                 //{"rows":[{"devIndex":"MXLR_TEST","graphicName":"xlr_panel_test","pid":2,
                 //"position":"位置1","positionCode":"位置2","sbdm":"设备代码","updateTime":"2017-08-31 14:05:51"}],"total":1}
@@ -3225,12 +3243,13 @@ namespace ImportXlsToDataTable
                 }
 
                 //背景颜色设置  <prop name="BackColor">{38,46,60}</prop>
+                //颜色暂时不做设置
                 xmlnode_panelbackground = xdPanelExample.SelectSingleNode("//panel/properties/prop[@name='BackColor']");
                 if (xmlnode_panelbackground != null)
                 {
-                    xmlnode_panelbackground.InnerText = PANEL_BACKGROUND_COLOR;
-
+                    //xmlnode_panelbackground.InnerText = PANEL_BACKGROUND_COLOR;
                 }
+
                 int referenceId = 1;//保证唯一
                 int taborder = 1000;//画面元素tab顺序 任何shape对象的TabOrder唯一 serialId唯一
                 string tagname = "";//图元绑定的tagname
@@ -3256,6 +3275,16 @@ namespace ImportXlsToDataTable
 
                     ShapesNode.RemoveChild(refer_t);
                 }
+
+                //获取groups成组信息的节点
+                XmlNodeList group_info_list = xdPanelExample.SelectNodes("/panel/groups/group");
+                List<string> groupid_list = new List<string>();
+                foreach (XmlNode group_t in group_info_list)
+                {
+                    
+                    groupid_list.Add(group_t.Attributes["serial"].Value);//InnerText
+                }
+
 
                 foreach (XmlNode text_label in text_replace_list)
                 {
@@ -3406,13 +3435,18 @@ namespace ImportXlsToDataTable
                             
                         }
 
-                   
-
                         //根据设备编号获取对应图元信息
                         //1.referenceId / Name  /TabOrder 编号都要唯一
                         //2.FileName 根据类型生成
                         //3.Location 用x,y生成。 Geometry / 固定格式： 1 0 0 1 0 0
                         //4.dollarParameters - dollarParameter - Value 获取 tagname
+
+                        //20171011 判断referenceId是否在group中有重复出现 如果有自增
+                        while (groupid_list.Contains(referenceId.ToString()))
+                        {
+                            referenceId++;
+                        };
+                        
 
                         string xpath_t = "/panel/shapes/reference[@referenceId='" + referenceId.ToString() + "']/properties/";
                         XMLHelper.XMLHelper.Set(xdPanelExample, xpath_t + "prop[@name='FileName']", "objects/"+ sysid + "/"+ classid + ".xml");//objects/EMCS/DDT.xml
@@ -3493,7 +3527,7 @@ namespace ImportXlsToDataTable
                 }
 
                 //画面记录信息
-                if(json_ary.Count>0)
+                if(json_ary.Count>0&& checkBox_servercom.Checked)
                 {
                     string urlstr = httpurl_addGraphicPosition;
                     HttpRequestEx httpobj = new HttpRequestEx();
@@ -3615,6 +3649,11 @@ namespace ImportXlsToDataTable
         }
 
         private void label11_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox_panelsize_CheckedChanged(object sender, EventArgs e)
         {
 
         }
